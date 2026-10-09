@@ -7,69 +7,103 @@ import java.time.format.DateTimeFormatter;
 
 public class StudentInternships {
 
-    private static final DateTimeFormatter DISPLAY_FORMAT =
+    private static final DateTimeFormatter DATE_FORMAT =
             DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
     public static JPanel createInternshipsPanel(String studentId) {
 
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        JLabel titleLabel = new JLabel("INTERNSHIP OPPORTUNITIES");
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 22));
-        mainPanel.add(titleLabel, BorderLayout.NORTH);
+        mainPanel.setBorder(
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
+        );
 
-        String[] columns = {
-                "ID",
-                "Company",
-                "Role",
-                "Duration",
-                "Stipend",
-                "Min CGPA",
-                "Max Backlogs",
-                "Eligible Departments",
-                "Start Date",
-                "Last Date",
-                "Applicants",
-                "Eligibility",
-                "Status"
+        JLabel title = new JLabel("INTERNSHIP PORTAL");
+        title.setFont(new Font("Arial", Font.BOLD, 22));
+
+        mainPanel.add(title, BorderLayout.NORTH);
+
+        JTabbedPane tabs = new JTabbedPane();
+
+        // Available internships table
+        String[] internshipColumns = {
+                "ID", "Company", "Role", "Duration", "Stipend",
+                "Min CGPA", "Max Backlogs", "Eligible Departments",
+                "Start Date", "Last Date", "Applicants",
+                "Eligibility", "Status"
         };
 
-        DefaultTableModel model = new DefaultTableModel(columns, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        DefaultTableModel internshipModel =
+                createTableModel(internshipColumns);
 
-        JTable table = new JTable(model);
-        table.setRowHeight(25);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        JTable internshipTable = new JTable(internshipModel);
+        internshipTable.setRowHeight(25);
+        internshipTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
         JButton applyButton = new JButton("Apply");
-        JButton refreshButton = new JButton("Refresh");
+        JButton refreshInternshipsButton = new JButton("Refresh");
 
-        JPanel buttonPanel =
+        JPanel internshipButtons =
                 new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
 
-        buttonPanel.add(applyButton);
-        buttonPanel.add(refreshButton);
+        internshipButtons.add(applyButton);
+        internshipButtons.add(refreshInternshipsButton);
 
-        JScrollPane scrollPane = new JScrollPane(table);
+        JPanel availablePanel = new JPanel(new BorderLayout(10, 10));
+        availablePanel.add(internshipButtons, BorderLayout.NORTH);
+        availablePanel.add(
+                new JScrollPane(internshipTable),
+                BorderLayout.CENTER
+        );
 
-        JPanel centerPanel =
+        tabs.addTab("Available Internships", availablePanel);
+
+        // My internship applications table
+        String[] applicationColumns = {
+                "Application ID", "Company", "Internship Role",
+                "Duration", "Stipend", "Date Applied", "Status"
+        };
+
+        DefaultTableModel applicationModel =
+                createTableModel(applicationColumns);
+
+        JTable applicationTable = new JTable(applicationModel);
+        applicationTable.setRowHeight(25);
+        applicationTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        JButton refreshApplicationsButton =
+                new JButton("Refresh Applications");
+
+        JPanel applicationButtons =
+                new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+
+        applicationButtons.add(refreshApplicationsButton);
+
+        JPanel myApplicationsPanel =
                 new JPanel(new BorderLayout(10, 10));
 
-        centerPanel.add(buttonPanel, BorderLayout.NORTH);
-        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        myApplicationsPanel.add(
+                applicationButtons,
+                BorderLayout.NORTH
+        );
 
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        myApplicationsPanel.add(
+                new JScrollPane(applicationTable),
+                BorderLayout.CENTER
+        );
 
-        loadInternships(model, studentId);
+        tabs.addTab("My Internship Applications", myApplicationsPanel);
 
+        mainPanel.add(tabs, BorderLayout.CENTER);
+
+        // Initial loading
+        loadInternships(internshipModel, studentId, mainPanel);
+        loadMyApplications(applicationModel, studentId, mainPanel);
+
+        // Apply for selected internship
         applyButton.addActionListener(e -> {
 
-            int selectedRow = table.getSelectedRow();
+            int selectedRow = internshipTable.getSelectedRow();
 
             if (selectedRow == -1) {
                 JOptionPane.showMessageDialog(
@@ -79,25 +113,25 @@ public class StudentInternships {
                 return;
             }
 
-            int row = table.convertRowIndexToModel(selectedRow);
+            int row = internshipTable.convertRowIndexToModel(selectedRow);
 
             int internshipId = Integer.parseInt(
-                    model.getValueAt(row, 0).toString()
+                    internshipModel.getValueAt(row, 0).toString()
             );
 
             String eligibility =
-                    model.getValueAt(row, 11).toString();
+                    internshipModel.getValueAt(row, 11).toString();
 
             String status =
-                    model.getValueAt(row, 12).toString();
+                    internshipModel.getValueAt(row, 12).toString();
 
-            String lastDateText =
-                    model.getValueAt(row, 9).toString();
+            String deadline =
+                    internshipModel.getValueAt(row, 9).toString();
 
             if (!"Eligible".equalsIgnoreCase(eligibility)) {
                 JOptionPane.showMessageDialog(
                         mainPanel,
-                        "You are not eligible for this internship."
+                        "You cannot apply. Eligibility: " + eligibility
                 );
                 return;
             }
@@ -111,12 +145,8 @@ public class StudentInternships {
             }
 
             try {
-
                 LocalDate lastDate =
-                        LocalDate.parse(
-                                lastDateText,
-                                DISPLAY_FORMAT
-                        );
+                        LocalDate.parse(deadline, DATE_FORMAT);
 
                 if (LocalDate.now().isAfter(lastDate)) {
                     JOptionPane.showMessageDialog(
@@ -127,23 +157,21 @@ public class StudentInternships {
                 }
 
             } catch (Exception ex) {
-
                 JOptionPane.showMessageDialog(
                         mainPanel,
-                        "Invalid application deadline."
+                        "The application deadline is invalid."
                 );
-
                 return;
             }
 
-            int confirm = JOptionPane.showConfirmDialog(
+            int confirmation = JOptionPane.showConfirmDialog(
                     mainPanel,
-                    "Apply for this internship?",
+                    "Submit your application for this internship?",
                     "Confirm Application",
                     JOptionPane.YES_NO_OPTION
             );
 
-            if (confirm != JOptionPane.YES_OPTION) {
+            if (confirmation != JOptionPane.YES_OPTION) {
                 return;
             }
 
@@ -153,28 +181,88 @@ public class StudentInternships {
                     VALUES (?, ?, CURRENT_DATE, 'Applied')
                     """;
 
-            try (
-                    Connection connection =
-                            DatabaseConnection.getConnection();
+            try (Connection connection =
+                         DatabaseConnection.getConnection()) {
 
-                    PreparedStatement statement =
-                            connection.prepareStatement(sql)
-            ) {
+                if (connection == null) {
+                    JOptionPane.showMessageDialog(
+                            mainPanel,
+                            "Database connection failed."
+                    );
+                    return;
+                }
 
-                statement.setString(1, studentId);
-                statement.setInt(2, internshipId);
+                // Recheck that the internship remains open
+                // and the deadline has not passed.
+                String checkSql = """
+                        SELECT status, last_date_to_apply
+                        FROM internships
+                        WHERE internship_id = ?
+                        """;
 
-                statement.executeUpdate();
+                try (PreparedStatement check =
+                             connection.prepareStatement(checkSql)) {
+
+                    check.setInt(1, internshipId);
+
+                    try (ResultSet result = check.executeQuery()) {
+
+                        if (!result.next()
+                                || !"Open".equalsIgnoreCase(
+                                        result.getString("status"))) {
+
+                            JOptionPane.showMessageDialog(
+                                    mainPanel,
+                                    "This internship is no longer open."
+                            );
+                            loadInternships(
+                                    internshipModel, studentId, mainPanel
+                            );
+                            return;
+                        }
+
+                        Date dbDeadline =
+                                result.getDate("last_date_to_apply");
+
+                        if (dbDeadline == null
+                                || LocalDate.now().isAfter(
+                                        dbDeadline.toLocalDate())) {
+
+                            JOptionPane.showMessageDialog(
+                                    mainPanel,
+                                    "The application deadline has passed."
+                            );
+                            loadInternships(
+                                    internshipModel, studentId, mainPanel
+                            );
+                            return;
+                        }
+                    }
+                }
+
+                try (PreparedStatement statement =
+                             connection.prepareStatement(sql)) {
+
+                    statement.setString(1, studentId);
+                    statement.setInt(2, internshipId);
+
+                    statement.executeUpdate();
+                }
 
                 JOptionPane.showMessageDialog(
                         mainPanel,
-                        "Internship application submitted successfully."
+                        "Internship application submitted successfully!"
                 );
 
                 loadInternships(
-                        model,
-                        studentId
+                        internshipModel, studentId, mainPanel
                 );
+
+                loadMyApplications(
+                        applicationModel, studentId, mainPanel
+                );
+
+                tabs.setSelectedIndex(1);
 
             } catch (SQLIntegrityConstraintViolationException ex) {
 
@@ -187,24 +275,41 @@ public class StudentInternships {
 
                 JOptionPane.showMessageDialog(
                         mainPanel,
-                        "Database error: " + ex.getMessage()
+                        "Error submitting application:\n" + ex.getMessage()
                 );
             }
         });
 
-        refreshButton.addActionListener(e ->
+        refreshInternshipsButton.addActionListener(e ->
                 loadInternships(
-                        model,
-                        studentId
+                        internshipModel, studentId, mainPanel
+                )
+        );
+
+        refreshApplicationsButton.addActionListener(e ->
+                loadMyApplications(
+                        applicationModel, studentId, mainPanel
                 )
         );
 
         return mainPanel;
     }
 
+    private static DefaultTableModel createTableModel(
+            String[] columns) {
+
+        return new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+    }
+
     private static void loadInternships(
             DefaultTableModel model,
-            String studentId) {
+            String studentId,
+            JPanel parent) {
 
         model.setRowCount(0);
 
@@ -234,158 +339,188 @@ public class StudentInternships {
                 ORDER BY i.start_date, i.internship_id
                 """;
 
-        try (
-                Connection connection =
-                        DatabaseConnection.getConnection();
+        try (Connection connection =
+                     DatabaseConnection.getConnection()) {
 
-                PreparedStatement studentStatement =
-                        connection.prepareStatement(studentSql)
-        ) {
-
-            studentStatement.setString(1, studentId);
+            if (connection == null) {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Database connection failed."
+                );
+                return;
+            }
 
             String department;
             double cgpa;
             int backlogs;
 
-            try (
-                    ResultSet studentResult =
-                            studentStatement.executeQuery()
-            ) {
+            try (PreparedStatement statement =
+                         connection.prepareStatement(studentSql)) {
 
-                if (!studentResult.next()) {
+                statement.setString(1, studentId);
 
-                    JOptionPane.showMessageDialog(
-                            null,
-                            "Student profile not found."
-                    );
+                try (ResultSet result = statement.executeQuery()) {
 
-                    return;
+                    if (!result.next()) {
+                        JOptionPane.showMessageDialog(
+                                parent,
+                                "Student profile not found."
+                        );
+                        return;
+                    }
+
+                    department = result.getString("department");
+                    cgpa = result.getDouble("cgpa");
+                    backlogs = result.getInt("active_backlogs");
                 }
-
-                department =
-                        studentResult.getString("department");
-
-                cgpa =
-                        studentResult.getDouble("cgpa");
-
-                backlogs =
-                        studentResult.getInt("active_backlogs");
             }
 
-            try (
-                    PreparedStatement internshipStatement =
-                            connection.prepareStatement(internshipSql);
-
-                    ResultSet result =
-                            internshipStatement.executeQuery()
-            ) {
+            try (PreparedStatement statement =
+                         connection.prepareStatement(internshipSql);
+                 ResultSet result = statement.executeQuery()) {
 
                 while (result.next()) {
 
-                    double minCgpa =
-                            result.getDouble("min_cgpa");
-
-                    int maxBacklogs =
-                            result.getInt("max_backlogs");
-
                     String eligibleDepartments =
-                            result.getString(
-                                    "eligible_departments"
-                            );
+                            result.getString("eligible_departments");
 
-                    Date startDate =
-                            result.getDate("start_date");
+                    String status = result.getString("status");
 
-                    Date lastDate =
-                            result.getDate("last_date_to_apply");
+                    Date startDate = result.getDate("start_date");
+                    Date lastDate = result.getDate("last_date_to_apply");
 
-                    String startDateText =
-                            startDate == null
-                                    ? ""
-                                    : startDate
-                                            .toLocalDate()
-                                            .format(DISPLAY_FORMAT);
+                    String startText = startDate == null
+                            ? ""
+                            : startDate.toLocalDate().format(DATE_FORMAT);
 
-                    String lastDateText =
-                            lastDate == null
-                                    ? ""
-                                    : lastDate
-                                            .toLocalDate()
-                                            .format(DISPLAY_FORMAT);
+                    String lastText = lastDate == null
+                            ? ""
+                            : lastDate.toLocalDate().format(DATE_FORMAT);
 
                     boolean branchEligible =
                             isDepartmentEligible(
-                                    department,
-                                    eligibleDepartments
+                                    department, eligibleDepartments
                             );
 
                     boolean cgpaEligible =
-                            cgpa >= minCgpa;
+                            cgpa >= result.getDouble("min_cgpa");
 
                     boolean backlogEligible =
-                            backlogs <= maxBacklogs;
+                            backlogs <= result.getInt("max_backlogs");
 
                     boolean deadlineValid =
-                            lastDate == null
-                                    || !LocalDate.now().isAfter(
+                            lastDate != null
+                                    && !LocalDate.now().isAfter(
                                             lastDate.toLocalDate()
                                     );
 
-                    boolean open =
-                            "Open".equalsIgnoreCase(
-                                    result.getString("status")
-                            );
-
                     String eligibility;
 
-                    if (!open) {
-
+                    if (!"Open".equalsIgnoreCase(status)) {
                         eligibility = "Closed";
-
                     } else if (!deadlineValid) {
-
                         eligibility = "Deadline Passed";
-
-                    } else if (
-                            branchEligible
-                                    && cgpaEligible
-                                    && backlogEligible
-                    ) {
-
+                    } else if (branchEligible
+                            && cgpaEligible
+                            && backlogEligible) {
                         eligibility = "Eligible";
-
                     } else {
-
                         eligibility = "Not Eligible";
                     }
 
-                    model.addRow(
-                            new Object[]{
-                                    result.getInt("internship_id"),
-                                    result.getString("company_name"),
-                                    result.getString("internship_role"),
-                                    result.getString("duration"),
-                                    result.getBigDecimal("stipend"),
-                                    result.getBigDecimal("min_cgpa"),
-                                    result.getInt("max_backlogs"),
-                                    eligibleDepartments,
-                                    startDateText,
-                                    lastDateText,
-                                    result.getInt("applicant_count"),
-                                    eligibility,
-                                    result.getString("status")
-                            }
-                    );
+                    model.addRow(new Object[]{
+                            result.getInt("internship_id"),
+                            result.getString("company_name"),
+                            result.getString("internship_role"),
+                            result.getString("duration"),
+                            result.getBigDecimal("stipend"),
+                            result.getBigDecimal("min_cgpa"),
+                            result.getInt("max_backlogs"),
+                            eligibleDepartments,
+                            startText,
+                            lastText,
+                            result.getInt("applicant_count"),
+                            eligibility,
+                            status
+                    });
                 }
             }
 
         } catch (SQLException ex) {
-
             JOptionPane.showMessageDialog(
-                    null,
-                    "Error loading internships: "
-                            + ex.getMessage()
+                    parent,
+                    "Error loading internships:\n" + ex.getMessage()
+            );
+        }
+    }
+
+    private static void loadMyApplications(
+            DefaultTableModel model,
+            String studentId,
+            JPanel parent) {
+
+        model.setRowCount(0);
+
+        String sql = """
+                SELECT ia.application_id,
+                       i.company_name,
+                       i.internship_role,
+                       i.duration,
+                       i.stipend,
+                       ia.application_date,
+                       ia.status
+                FROM internship_applications ia
+                JOIN internships i
+                    ON ia.internship_id = i.internship_id
+                WHERE ia.student_id = ?
+                ORDER BY ia.application_id DESC
+                """;
+
+        try (Connection connection =
+                     DatabaseConnection.getConnection()) {
+
+            if (connection == null) {
+                JOptionPane.showMessageDialog(
+                        parent,
+                        "Database connection failed."
+                );
+                return;
+            }
+
+            try (PreparedStatement statement =
+                         connection.prepareStatement(sql)) {
+
+                statement.setString(1, studentId);
+
+                try (ResultSet result = statement.executeQuery()) {
+
+                    while (result.next()) {
+
+                        Date applicationDate =
+                                result.getDate("application_date");
+
+                        String dateText = applicationDate == null
+                                ? ""
+                                : applicationDate.toLocalDate()
+                                        .format(DATE_FORMAT);
+
+                        model.addRow(new Object[]{
+                                result.getInt("application_id"),
+                                result.getString("company_name"),
+                                result.getString("internship_role"),
+                                result.getString("duration"),
+                                result.getBigDecimal("stipend"),
+                                dateText,
+                                result.getString("status")
+                        });
+                    }
+                }
+            }
+
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(
+                    parent,
+                    "Error loading your applications:\n" + ex.getMessage()
             );
         }
     }
@@ -394,26 +529,15 @@ public class StudentInternships {
             String studentDepartment,
             String eligibleDepartments) {
 
-        if (
-                studentDepartment == null
-                        || eligibleDepartments == null
-        ) {
+        if (studentDepartment == null
+                || eligibleDepartments == null) {
             return false;
         }
 
-        String normalizedStudentDepartment =
-                studentDepartment.trim().toLowerCase();
+        for (String department : eligibleDepartments.split(",")) {
 
-        String[] departments =
-                eligibleDepartments.split(",");
-
-        for (String department : departments) {
-
-            if (
-                    normalizedStudentDepartment.equals(
-                            department.trim().toLowerCase()
-                    )
-            ) {
+            if (studentDepartment.trim().equalsIgnoreCase(
+                    department.trim())) {
                 return true;
             }
         }

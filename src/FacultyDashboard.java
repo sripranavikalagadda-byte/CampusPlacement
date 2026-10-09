@@ -57,7 +57,7 @@ public class FacultyDashboard {
         JPanel sidebar = new JPanel();
 
         sidebar.setLayout(
-                new GridLayout(10, 1, 0, 8)
+                new GridLayout(11, 1, 0, 8)
         );
 
         sidebar.setPreferredSize(
@@ -79,6 +79,9 @@ public class FacultyDashboard {
 
         JButton internshipsButton =
                 createMenuButton("Internships");
+
+        JButton internshipApplicationsButton =
+                createMenuButton("Internship Applications");        
 
         JButton applicationsButton =
                 createMenuButton("Applications");
@@ -102,6 +105,7 @@ public class FacultyDashboard {
         sidebar.add(studentsButton);
         sidebar.add(companiesButton);
         sidebar.add(internshipsButton);
+        sidebar.add(internshipApplicationsButton);
         sidebar.add(applicationsButton);
         sidebar.add(shortlistedButton);
         sidebar.add(selectedButton);
@@ -165,6 +169,13 @@ public class FacultyDashboard {
                 internshipsPanel,
                 "internships"
         );
+        JPanel internshipApplicationsPanel =
+        FacultyInternshipApplications.createApplicationsPanel();
+
+contentPanel.add(
+        internshipApplicationsPanel,
+        "internshipApplications"
+);
 
         // ==============================
         // APPLICATIONS
@@ -266,6 +277,12 @@ public class FacultyDashboard {
                         "internships"
                 )
         );
+        internshipApplicationsButton.addActionListener(e ->
+        cardLayout.show(
+                contentPanel,
+                "internshipApplications"
+        )
+);
 
         // Applications
         applicationsButton.addActionListener(e ->
