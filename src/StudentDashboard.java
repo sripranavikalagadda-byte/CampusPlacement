@@ -43,10 +43,10 @@ public class StudentDashboard {
                 new Dimension(1100, 75)
         );
 
-        JLabel title =
-                new JLabel(
-                        "  CAMPUS PLACEMENT MANAGEMENT SYSTEM"
-                );
+       JLabel title =
+        new JLabel(
+                "  G. Narayanamma Institute of Technology"
+        );
 
         title.setForeground(Color.WHITE);
 
