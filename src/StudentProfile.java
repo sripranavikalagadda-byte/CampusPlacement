@@ -1,104 +1,45 @@
+
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.sql.*;
 
 public class StudentProfile {
 
-    // ==========================================
-    // SHOW PROFILE
-    // ==========================================
-
     public static void showProfile(String email) {
 
-        JFrame frame =
-                new JFrame("My Profile");
-
-        frame.setSize(900, 800);
-
-        frame.setDefaultCloseOperation(
-                JFrame.DISPOSE_ON_CLOSE
-        );
-
+        JFrame frame = new JFrame("My Profile");
+        frame.setSize(950, 800);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
-        JPanel mainPanel =
-                new JPanel(new BorderLayout(15, 15));
-
+        JPanel mainPanel = new JPanel(new BorderLayout(12, 12));
         mainPanel.setBorder(
-                BorderFactory.createEmptyBorder(
-                        15, 20, 15, 20
-                )
+                BorderFactory.createEmptyBorder(15, 20, 15, 20)
         );
 
-        // ==========================================
-        // TITLE
-        // ==========================================
+        JLabel title = new JLabel("MY PROFILE", SwingConstants.CENTER);
+        title.setFont(new Font("Arial", Font.BOLD, 28));
+        mainPanel.add(title, BorderLayout.NORTH);
 
-        JLabel title =
-                new JLabel(
-                        "MY PROFILE",
-                        SwingConstants.CENTER
-                );
-
-        title.setFont(
-                new Font(
-                        "Arial",
-                        Font.BOLD,
-                        28
-                )
-        );
-
-        mainPanel.add(
-                title,
-                BorderLayout.NORTH
-        );
-
-        // ==========================================
-        // CONTENT
-        // ==========================================
-
-        JPanel contentPanel =
-                new JPanel();
-
+        JPanel contentPanel = new JPanel();
         contentPanel.setLayout(
-                new BoxLayout(
-                        contentPanel,
-                        BoxLayout.Y_AXIS
-                )
+                new BoxLayout(contentPanel, BoxLayout.Y_AXIS)
         );
 
-        // ==========================================
-        // PERSONAL & ACADEMIC DETAILS
-        // ==========================================
+        // PERSONAL AND ACADEMIC DETAILS
 
-        JPanel detailsPanel =
-                new JPanel(
-                        new GridLayout(
-                                5,
-                                4,
-                                10,
-                                10
-                        )
-                );
+        JPanel detailsPanel = new JPanel(
+                new GridLayout(4, 4, 10, 10)
+        );
 
         detailsPanel.setBorder(
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(
-                                Color.GRAY
-                        ),
+                        BorderFactory.createLineBorder(Color.GRAY),
                         "Personal & Academic Details",
                         TitledBorder.LEFT,
                         TitledBorder.TOP,
-                        new Font(
-                                "Arial",
-                                Font.BOLD,
-                                16
-                        )
+                        new Font("Arial", Font.BOLD, 16)
                 )
         );
 
@@ -106,12 +47,8 @@ public class StudentProfile {
         JLabel studentIdValue = new JLabel();
         JLabel emailValue = new JLabel();
         JLabel mobileValue = new JLabel();
-
-        JLabel parentValue = new JLabel();
-        JLabel parentMobileValue = new JLabel();
         JLabel departmentValue = new JLabel();
         JLabel yearValue = new JLabel();
-
         JLabel cgpaValue = new JLabel();
         JLabel backlogValue = new JLabel();
 
@@ -127,12 +64,6 @@ public class StudentProfile {
         detailsPanel.add(new JLabel("Mobile:"));
         detailsPanel.add(mobileValue);
 
-        detailsPanel.add(new JLabel("Parent Name:"));
-        detailsPanel.add(parentValue);
-
-        detailsPanel.add(new JLabel("Parent Mobile:"));
-        detailsPanel.add(parentMobileValue);
-
         detailsPanel.add(new JLabel("Department:"));
         detailsPanel.add(departmentValue);
 
@@ -145,1420 +76,182 @@ public class StudentProfile {
         detailsPanel.add(new JLabel("Active Backlogs:"));
         detailsPanel.add(backlogValue);
 
-        // ==========================================
-        // SKILLS
-        // ==========================================
+        // PARENT CONTACT DETAILS
 
-        JTextArea skillsArea =
-                new JTextArea();
+        JPanel parentPanel = new JPanel(new BorderLayout(10, 8));
 
-        skillsArea.setEditable(false);
-        skillsArea.setLineWrap(true);
-        skillsArea.setWrapStyleWord(true);
-
-        skillsArea.setFont(
-                new Font(
-                        "Arial",
-                        Font.PLAIN,
-                        14
-                )
-        );
-
-        JPanel skillsPanel =
-                new JPanel(new BorderLayout(5, 5));
-
-        skillsPanel.setBorder(
+        parentPanel.setBorder(
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(
-                                Color.GRAY
-                        ),
-                        "Skills",
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "Parent Contact Details",
                         TitledBorder.LEFT,
                         TitledBorder.TOP,
-                        new Font(
-                                "Arial",
-                                Font.BOLD,
-                                16
-                        )
+                        new Font("Arial", Font.BOLD, 16)
                 )
         );
 
-        JButton addSkillButton =
-                new JButton("Add Skill");
+        JPanel parentFieldsPanel = new JPanel(
+                new GridLayout(2, 4, 10, 10)
+        );
 
-        JButton deleteSkillButton =
-                new JButton("Delete Skill");
+        JTextField motherNameField = new JTextField();
+        JTextField motherMobileField = new JTextField();
+        JTextField fatherNameField = new JTextField();
+        JTextField fatherMobileField = new JTextField();
 
-        JPanel skillsButtons =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.LEFT
-                        )
-                );
+        parentFieldsPanel.add(new JLabel("Mother's Name:"));
+        parentFieldsPanel.add(motherNameField);
 
-        skillsButtons.add(addSkillButton);
-        skillsButtons.add(deleteSkillButton);
+        parentFieldsPanel.add(new JLabel("Mother's Mobile:"));
+        parentFieldsPanel.add(motherMobileField);
 
-        skillsPanel.add(
-                new JScrollPane(skillsArea),
+        parentFieldsPanel.add(new JLabel("Father's Name:"));
+        parentFieldsPanel.add(fatherNameField);
+
+        parentFieldsPanel.add(new JLabel("Father's Mobile:"));
+        parentFieldsPanel.add(fatherMobileField);
+
+        JTextArea parentInstruction = new JTextArea(
+                "Enter the name and 10-digit mobile number of at least " +
+                "one parent. The other parent's fields may remain blank."
+        );
+        parentInstruction.setEditable(false);
+        parentInstruction.setLineWrap(true);
+        parentInstruction.setWrapStyleWord(true);
+        parentInstruction.setOpaque(false);
+        parentInstruction.setFont(new Font("Arial", Font.PLAIN, 12));
+        parentInstruction.setRows(2);
+
+        JButton saveParentButton = new JButton("Save Parent Details");
+        saveParentButton.setEnabled(false);
+
+        JPanel parentBottomPanel = new JPanel(new BorderLayout(8, 5));
+        parentBottomPanel.add(
+                parentInstruction,
                 BorderLayout.CENTER
         );
 
-        skillsPanel.add(
-                skillsButtons,
+        JPanel saveButtonPanel = new JPanel(
+                new FlowLayout(FlowLayout.RIGHT)
+        );
+        saveButtonPanel.add(saveParentButton);
+
+        parentBottomPanel.add(
+                saveButtonPanel,
                 BorderLayout.SOUTH
         );
 
-        // ==========================================
+        parentPanel.add(parentFieldsPanel, BorderLayout.NORTH);
+        parentPanel.add(parentBottomPanel, BorderLayout.CENTER);
+
+        // SKILLS
+
+        JTextArea skillsArea = new JTextArea();
+        skillsArea.setEditable(false);
+        skillsArea.setLineWrap(true);
+        skillsArea.setWrapStyleWord(true);
+        skillsArea.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        JPanel skillsPanel = new JPanel(new BorderLayout());
+        skillsPanel.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "Skills"
+                )
+        );
+        skillsPanel.add(new JScrollPane(skillsArea), BorderLayout.CENTER);
+
         // ACHIEVEMENTS
-        // ==========================================
 
-        JTextArea achievementsArea =
-                new JTextArea();
-
+        JTextArea achievementsArea = new JTextArea();
         achievementsArea.setEditable(false);
         achievementsArea.setLineWrap(true);
         achievementsArea.setWrapStyleWord(true);
+        achievementsArea.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        achievementsArea.setFont(
-                new Font(
-                        "Arial",
-                        Font.PLAIN,
-                        14
-                )
-        );
-
-        JPanel achievementsPanel =
-                new JPanel(new BorderLayout(5, 5));
-
+        JPanel achievementsPanel = new JPanel(new BorderLayout());
         achievementsPanel.setBorder(
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(
-                                Color.GRAY
-                        ),
-                        "Achievements",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font(
-                                "Arial",
-                                Font.BOLD,
-                                16
-                        )
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "Achievements"
                 )
         );
-
-        JButton addAchievementButton =
-                new JButton("Add Achievement");
-
-        JButton deleteAchievementButton =
-                new JButton("Delete Achievement");
-
-        JPanel achievementButtons =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.LEFT
-                        )
-                );
-
-        achievementButtons.add(
-                addAchievementButton
-        );
-
-        achievementButtons.add(
-                deleteAchievementButton
-        );
-
         achievementsPanel.add(
                 new JScrollPane(achievementsArea),
                 BorderLayout.CENTER
         );
 
-        achievementsPanel.add(
-                achievementButtons,
-                BorderLayout.SOUTH
+        JPanel middlePanel = new JPanel(
+                new GridLayout(1, 2, 15, 15)
         );
-
-        // ==========================================
-        // SKILLS + ACHIEVEMENTS
-        // ==========================================
-
-        JPanel middlePanel =
-                new JPanel(
-                        new GridLayout(
-                                1,
-                                2,
-                                15,
-                                15
-                        )
-                );
-
         middlePanel.add(skillsPanel);
         middlePanel.add(achievementsPanel);
+        middlePanel.setPreferredSize(new Dimension(800, 160));
 
-        middlePanel.setPreferredSize(
-                new Dimension(
-                        800,
-                        200
-                )
-        );
-
-        // ==========================================
         // CERTIFICATES
-        // ==========================================
 
-        JTextArea certificatesArea =
-                new JTextArea();
-
+        JTextArea certificatesArea = new JTextArea();
         certificatesArea.setEditable(false);
         certificatesArea.setLineWrap(true);
         certificatesArea.setWrapStyleWord(true);
+        certificatesArea.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        certificatesArea.setFont(
-                new Font(
-                        "Arial",
-                        Font.PLAIN,
-                        14
-                )
-        );
-
-        JPanel certificatesPanel =
-                new JPanel(new BorderLayout(5, 5));
-
+        JPanel certificatesPanel = new JPanel(new BorderLayout());
         certificatesPanel.setBorder(
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(
-                                Color.GRAY
-                        ),
-                        "Certificates",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font(
-                                "Arial",
-                                Font.BOLD,
-                                16
-                        )
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "Certificates"
                 )
         );
-
-        JButton addCertificateButton =
-                new JButton("Add Certificate");
-
-        JButton deleteCertificateButton =
-                new JButton("Delete Certificate");
-
-        JPanel certificateButtons =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.LEFT
-                        )
-                );
-
-        certificateButtons.add(
-                addCertificateButton
-        );
-
-        certificateButtons.add(
-                deleteCertificateButton
-        );
-
         certificatesPanel.add(
                 new JScrollPane(certificatesArea),
                 BorderLayout.CENTER
         );
+        certificatesPanel.setPreferredSize(new Dimension(800, 120));
 
-        certificatesPanel.add(
-                certificateButtons,
-                BorderLayout.SOUTH
-        );
-
-        certificatesPanel.setPreferredSize(
-                new Dimension(
-                        800,
-                        160
-                )
-        );
-
-        // ==========================================
         // RESUME
-        // ==========================================
 
-        JPanel resumePanel =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.LEFT
-                        )
-                );
-
+        JPanel resumePanel = new JPanel(
+                new FlowLayout(FlowLayout.LEFT)
+        );
         resumePanel.setBorder(
                 BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(
-                                Color.GRAY
-                        ),
-                        "Resume",
-                        TitledBorder.LEFT,
-                        TitledBorder.TOP,
-                        new Font(
-                                "Arial",
-                                Font.BOLD,
-                                16
-                        )
+                        BorderFactory.createLineBorder(Color.GRAY),
+                        "Resume"
                 )
         );
 
-        JButton uploadResumeButton =
-                new JButton("Upload Resume");
+        JButton resumeButton = new JButton("View Resume");
+        String[] resumePathHolder = {null};
 
-        JButton openResumeButton =
-                new JButton("Open Resume");
+        resumeButton.addActionListener(e -> {
+            String path = resumePathHolder[0];
 
-        resumePanel.add(
-                uploadResumeButton
-        );
-
-        resumePanel.add(
-                openResumeButton
-        );
-
-        // ==========================================
-        // EDIT PROFILE BUTTON
-        // ==========================================
-
-        JButton editProfileButton =
-                new JButton("Edit Profile");
-
-        editProfileButton.setFont(
-                new Font(
-                        "Arial",
-                        Font.BOLD,
-                        14
-                )
-        );
-
-        JButton closeButton =
-                new JButton("Close");
-
-        JPanel bottomPanel =
-                new JPanel(
-                        new FlowLayout(
-                                FlowLayout.RIGHT
-                        )
-                );
-
-        bottomPanel.add(
-                editProfileButton
-        );
-
-        bottomPanel.add(
-                closeButton
-        );
-
-        // ==========================================
-        // DATABASE DATA
-        // ==========================================
-
-        String studentSql = """
-                SELECT
-                    s.student_id,
-                    s.name,
-                    u.college_email,
-                    s.mobile,
-                    s.parent_name,
-                    s.parent_mobile,
-                    s.department,
-                    s.study_year,
-                    s.cgpa,
-                    s.active_backlogs,
-                    s.resume_path
-                FROM students s
-                JOIN users u
-                    ON s.user_id = u.user_id
-                WHERE LOWER(u.college_email) = LOWER(?)
-                """;
-
-        final String[] studentIdHolder =
-                new String[1];
-
-        final String[] resumePathHolder =
-                new String[1];
-
-        // ==========================================
-        // LOAD PROFILE
-        // ==========================================
-
-        Runnable loadProfile = () -> {
-
-            try (
-                    Connection connection =
-                            DatabaseConnection.getConnection();
-
-                    PreparedStatement statement =
-                            connection.prepareStatement(
-                                    studentSql
-                            )
-            ) {
-
-                statement.setString(
-                        1,
-                        email
-                );
-
-                try (
-                        ResultSet result =
-                                statement.executeQuery()
-                ) {
-
-                    if (!result.next()) {
-
-                        JOptionPane.showMessageDialog(
-                                frame,
-                                "Student profile not found.",
-                                "Error",
-                                JOptionPane.ERROR_MESSAGE
-                        );
-
-                        return;
-                    }
-
-                    String studentId =
-                            result.getString(
-                                    "student_id"
-                            );
-
-                    studentIdHolder[0] =
-                            studentId;
-
-                    nameValue.setText(
-                            safe(result.getString("name"))
-                    );
-
-                    studentIdValue.setText(
-                            safe(studentId)
-                    );
-
-                    emailValue.setText(
-                            safe(result.getString(
-                                    "college_email"
-                            ))
-                    );
-
-                    mobileValue.setText(
-                            safe(result.getString("mobile"))
-                    );
-
-                    parentValue.setText(
-                            safe(result.getString(
-                                    "parent_name"
-                            ))
-                    );
-
-                    parentMobileValue.setText(
-                            safe(result.getString(
-                                    "parent_mobile"
-                            ))
-                    );
-
-                    departmentValue.setText(
-                            safe(result.getString(
-                                    "department"
-                            ))
-                    );
-
-                    yearValue.setText(
-                            String.valueOf(
-                                    result.getInt(
-                                            "study_year"
-                                    )
-                            )
-                    );
-
-                    cgpaValue.setText(
-                            String.valueOf(
-                                    result.getDouble(
-                                            "cgpa"
-                                    )
-                            )
-                    );
-
-                    backlogValue.setText(
-                            String.valueOf(
-                                    result.getInt(
-                                            "active_backlogs"
-                                    )
-                                )
-                    );
-
-                    resumePathHolder[0] =
-                            result.getString(
-                                    "resume_path"
-                            );
-                }
-
-                loadSkills(
-                        connection,
-                        studentIdHolder[0],
-                        skillsArea
-                );
-
-                loadAchievements(
-                        connection,
-                        studentIdHolder[0],
-                        achievementsArea
-                );
-
-                loadCertificates(
-                        connection,
-                        studentIdHolder[0],
-                        certificatesArea
-                );
-
-            } catch (Exception ex) {
-
+            if (path == null || path.trim().isEmpty()) {
                 JOptionPane.showMessageDialog(
                         frame,
-                        "Database error:\n"
-                                + ex.getMessage(),
-                        "Database Error",
-                        JOptionPane.ERROR_MESSAGE
+                        "No resume has been uploaded."
                 );
-            }
-        };
-
-        // ==========================================
-        // EDIT PROFILE
-        // ==========================================
-
-        editProfileButton.addActionListener(e -> {
-
-            JTextField nameField =
-                    new JTextField(
-                            nameValue.getText()
-                    );
-
-            JTextField mobileField =
-                    new JTextField(
-                            mobileValue.getText()
-                    );
-
-            JTextField parentField =
-                    new JTextField(
-                            parentValue.getText()
-                    );
-
-            JTextField parentMobileField =
-                    new JTextField(
-                            parentMobileValue.getText()
-                    );
-
-            JTextField departmentField =
-                    new JTextField(
-                            departmentValue.getText()
-                    );
-
-            JTextField yearField =
-                    new JTextField(
-                            yearValue.getText()
-                    );
-
-            JTextField cgpaField =
-                    new JTextField(
-                            cgpaValue.getText()
-                    );
-
-            JTextField backlogField =
-                    new JTextField(
-                            backlogValue.getText()
-                    );
-
-            JPanel panel =
-                    new JPanel(
-                            new GridLayout(
-                                    0,
-                                    2,
-                                    10,
-                                    10
-                            )
-                    );
-
-            panel.add(new JLabel("Name:"));
-            panel.add(nameField);
-
-            panel.add(new JLabel("Mobile:"));
-            panel.add(mobileField);
-
-            panel.add(new JLabel("Parent Name:"));
-            panel.add(parentField);
-
-            panel.add(new JLabel("Parent Mobile:"));
-            panel.add(parentMobileField);
-
-            panel.add(new JLabel("Department:"));
-            panel.add(departmentField);
-
-            panel.add(new JLabel("Study Year:"));
-            panel.add(yearField);
-
-            panel.add(new JLabel("CGPA:"));
-            panel.add(cgpaField);
-
-            panel.add(new JLabel("Active Backlogs:"));
-            panel.add(backlogField);
-
-            int result =
-                    JOptionPane.showConfirmDialog(
-                            frame,
-                            panel,
-                            "Edit Profile",
-                            JOptionPane.OK_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE
-                    );
-
-            if (result != JOptionPane.OK_OPTION) {
-                return;
-            }
-
-            try {
-
-                int studyYear =
-                        Integer.parseInt(
-                                yearField.getText().trim()
-                        );
-
-                double cgpa =
-                        Double.parseDouble(
-                                cgpaField.getText().trim()
-                        );
-
-                int backlogs =
-                        Integer.parseInt(
-                                backlogField.getText().trim()
-                        );
-
-                if (studyYear < 1 ||
-                        studyYear > 4) {
-
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Study year must be between 1 and 4.",
-                            "Invalid Study Year",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-
-                    return;
-                }
-
-                if (cgpa < 0 ||
-                        cgpa > 10) {
-
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "CGPA must be between 0 and 10.",
-                            "Invalid CGPA",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-
-                    return;
-                }
-
-                if (backlogs < 0) {
-
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Backlogs cannot be negative.",
-                            "Invalid Backlogs",
-                            JOptionPane.WARNING_MESSAGE
-                    );
-
-                    return;
-                }
-
-                String updateSql = """
-                        UPDATE students
-                        SET name = ?,
-                            mobile = ?,
-                            parent_name = ?,
-                            parent_mobile = ?,
-                            department = ?,
-                            study_year = ?,
-                            cgpa = ?,
-                            active_backlogs = ?
-                        WHERE student_id = ?
-                        """;
-
-                try (
-                        Connection connection =
-                                DatabaseConnection.getConnection();
-
-                        PreparedStatement statement =
-                                connection.prepareStatement(
-                                        updateSql
-                                )
-                ) {
-
-                    statement.setString(
-                            1,
-                            nameField.getText().trim()
-                    );
-
-                    statement.setString(
-                            2,
-                            mobileField.getText().trim()
-                    );
-
-                    statement.setString(
-                            3,
-                            parentField.getText().trim()
-                    );
-
-                    statement.setString(
-                            4,
-                            parentMobileField.getText().trim()
-                    );
-
-                    statement.setString(
-                            5,
-                            departmentField.getText().trim()
-                    );
-
-                    statement.setInt(
-                            6,
-                            studyYear
-                    );
-
-                    statement.setDouble(
-                            7,
-                            cgpa
-                    );
-
-                    statement.setInt(
-                            8,
-                            backlogs
-                    );
-
-                    statement.setString(
-                            9,
-                            studentIdHolder[0]
-                    );
-
-                    statement.executeUpdate();
-                }
-
+            } else {
                 JOptionPane.showMessageDialog(
                         frame,
-                        "Profile updated successfully!",
-                        "Success",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-
-                loadProfile.run();
-
-            } catch (NumberFormatException ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Study Year, CGPA and Backlogs must contain valid numbers.",
-                        "Invalid Input",
-                        JOptionPane.WARNING_MESSAGE
-                );
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error updating profile:\n"
-                                + ex.getMessage(),
-                        "Database Error",
-                        JOptionPane.ERROR_MESSAGE
+                        "Resume location:\n" + path
                 );
             }
         });
 
-        // ==========================================
-        // ADD SKILL
-        // ==========================================
+        resumePanel.add(resumeButton);
 
-        addSkillButton.addActionListener(e -> {
-
-            String skill =
-                    JOptionPane.showInputDialog(
-                            frame,
-                            "Enter skill:"
-                    );
-
-            if (skill == null ||
-                    skill.trim().isEmpty()) {
-                return;
-            }
-
-            String sql = """
-                    INSERT INTO student_skills
-                    (student_id, skill_name)
-                    VALUES (?, ?)
-                    """;
-
-            try (
-                    Connection connection =
-                            DatabaseConnection.getConnection();
-
-                    PreparedStatement statement =
-                            connection.prepareStatement(sql)
-            ) {
-
-                statement.setString(
-                        1,
-                        studentIdHolder[0]
-                );
-
-                statement.setString(
-                        2,
-                        skill.trim()
-                );
-
-                statement.executeUpdate();
-
-                loadProfile.run();
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error adding skill:\n"
-                                + ex.getMessage(),
-                        "Database Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        // ==========================================
-        // DELETE SKILL
-        // ==========================================
-
-        deleteSkillButton.addActionListener(e -> {
-
-            String skill =
-                    JOptionPane.showInputDialog(
-                            frame,
-                            "Enter the exact skill name to delete:"
-                    );
-
-            if (skill == null ||
-                    skill.trim().isEmpty()) {
-                return;
-            }
-
-            String sql = """
-                    DELETE FROM student_skills
-                    WHERE student_id = ?
-                    AND skill_name = ?
-                    LIMIT 1
-                    """;
-
-            try (
-                    Connection connection =
-                            DatabaseConnection.getConnection();
-
-                    PreparedStatement statement =
-                            connection.prepareStatement(sql)
-            ) {
-
-                statement.setString(
-                        1,
-                        studentIdHolder[0]
-                );
-
-                statement.setString(
-                        2,
-                        skill.trim()
-                );
-
-                int rows =
-                        statement.executeUpdate();
-
-                if (rows == 0) {
-
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Skill not found."
-                    );
-
-                } else {
-
-                    loadProfile.run();
-                }
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error deleting skill:\n"
-                                + ex.getMessage(),
-                        "Database Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        // ==========================================
-        // ADD ACHIEVEMENT
-        // ==========================================
-
-        addAchievementButton.addActionListener(e -> {
-
-            JTextField achievementField =
-                    new JTextField();
-
-            JTextField descriptionField =
-                    new JTextField();
-
-            JPanel panel =
-                    new JPanel(
-                            new GridLayout(
-                                    0,
-                                    2,
-                                    10,
-                                    10
-                            )
-                    );
-
-            panel.add(
-                    new JLabel(
-                            "Achievement:"
-                    )
-            );
-
-            panel.add(
-                    achievementField
-            );
-
-            panel.add(
-                    new JLabel(
-                            "Description:"
-                    )
-            );
-
-            panel.add(
-                    descriptionField
-            );
-
-            int result =
-                    JOptionPane.showConfirmDialog(
-                            frame,
-                            panel,
-                            "Add Achievement",
-                            JOptionPane.OK_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE
-                    );
-
-            if (result != JOptionPane.OK_OPTION) {
-                return;
-            }
-
-            if (achievementField
-                    .getText()
-                    .trim()
-                    .isEmpty()) {
-
-                return;
-            }
-
-            String sql = """
-                    INSERT INTO achievements
-                    (
-                        student_id,
-                        achievement_name,
-                        description
-                    )
-                    VALUES (?, ?, ?)
-                    """;
-
-            try (
-                    Connection connection =
-                            DatabaseConnection.getConnection();
-
-                    PreparedStatement statement =
-                            connection.prepareStatement(sql)
-            ) {
-
-                statement.setString(
-                        1,
-                        studentIdHolder[0]
-                );
-
-                statement.setString(
-                        2,
-                        achievementField
-                                .getText()
-                                .trim()
-                );
-
-                statement.setString(
-                        3,
-                        descriptionField
-                                .getText()
-                                .trim()
-                );
-
-                statement.executeUpdate();
-
-                loadProfile.run();
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error adding achievement:\n"
-                                + ex.getMessage(),
-                        "Database Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        // ==========================================
-        // DELETE ACHIEVEMENT
-        // ==========================================
-
-        deleteAchievementButton.addActionListener(e -> {
-
-            String achievement =
-                    JOptionPane.showInputDialog(
-                            frame,
-                            "Enter the exact achievement name to delete:"
-                    );
-
-            if (achievement == null ||
-                    achievement.trim().isEmpty()) {
-                return;
-            }
-
-            String sql = """
-                    DELETE FROM achievements
-                    WHERE student_id = ?
-                    AND achievement_name = ?
-                    LIMIT 1
-                    """;
-
-            try (
-                    Connection connection =
-                            DatabaseConnection.getConnection();
-
-                    PreparedStatement statement =
-                            connection.prepareStatement(sql)
-            ) {
-
-                statement.setString(
-                        1,
-                        studentIdHolder[0]
-                );
-
-                statement.setString(
-                        2,
-                        achievement.trim()
-                );
-
-                int rows =
-                        statement.executeUpdate();
-
-                if (rows == 0) {
-
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Achievement not found."
-                    );
-
-                } else {
-
-                    loadProfile.run();
-                }
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error deleting achievement:\n"
-                                + ex.getMessage(),
-                        "Database Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        // ==========================================
-        // ADD CERTIFICATE
-        // ==========================================
-
-        addCertificateButton.addActionListener(e -> {
-
-            JTextField certificateField =
-                    new JTextField();
-
-            JTextField urlField =
-                    new JTextField();
-
-            JPanel panel =
-                    new JPanel(
-                            new GridLayout(
-                                    0,
-                                    2,
-                                    10,
-                                    10
-                            )
-                    );
-
-            panel.add(
-                    new JLabel(
-                            "Certificate Name:"
-                    )
-            );
-
-            panel.add(
-                    certificateField
-            );
-
-            panel.add(
-                    new JLabel(
-                            "Certificate URL:"
-                    )
-            );
-
-            panel.add(
-                    urlField
-            );
-
-            int result =
-                    JOptionPane.showConfirmDialog(
-                            frame,
-                            panel,
-                            "Add Certificate",
-                            JOptionPane.OK_CANCEL_OPTION,
-                            JOptionPane.PLAIN_MESSAGE
-                    );
-
-            if (result != JOptionPane.OK_OPTION) {
-                return;
-            }
-
-            if (certificateField
-                    .getText()
-                    .trim()
-                    .isEmpty()) {
-
-                return;
-            }
-
-            String sql = """
-                    INSERT INTO certificates
-                    (
-                        student_id,
-                        certificate_name,
-                        certificate_url
-                    )
-                    VALUES (?, ?, ?)
-                    """;
-
-            try (
-                    Connection connection =
-                            DatabaseConnection.getConnection();
-
-                    PreparedStatement statement =
-                            connection.prepareStatement(sql)
-            ) {
-
-                statement.setString(
-                        1,
-                        studentIdHolder[0]
-                );
-
-                statement.setString(
-                        2,
-                        certificateField
-                                .getText()
-                                .trim()
-                );
-
-                statement.setString(
-                        3,
-                        urlField.getText().trim()
-                );
-
-                statement.executeUpdate();
-
-                loadProfile.run();
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error adding certificate:\n"
-                                + ex.getMessage(),
-                        "Database Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        // ==========================================
-        // DELETE CERTIFICATE
-        // ==========================================
-
-        deleteCertificateButton.addActionListener(e -> {
-
-            String certificate =
-                    JOptionPane.showInputDialog(
-                            frame,
-                            "Enter the exact certificate name to delete:"
-                    );
-
-            if (certificate == null ||
-                    certificate.trim().isEmpty()) {
-                return;
-            }
-
-            String sql = """
-                    DELETE FROM certificates
-                    WHERE student_id = ?
-                    AND certificate_name = ?
-                    LIMIT 1
-                    """;
-
-            try (
-                    Connection connection =
-                            DatabaseConnection.getConnection();
-
-                    PreparedStatement statement =
-                            connection.prepareStatement(sql)
-            ) {
-
-                statement.setString(
-                        1,
-                        studentIdHolder[0]
-                );
-
-                statement.setString(
-                        2,
-                        certificate.trim()
-                );
-
-                int rows =
-                        statement.executeUpdate();
-
-                if (rows == 0) {
-
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Certificate not found."
-                    );
-
-                } else {
-
-                    loadProfile.run();
-                }
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error deleting certificate:\n"
-                                + ex.getMessage(),
-                        "Database Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        // ==========================================
-        // UPLOAD RESUME
-        // ==========================================
-
-        uploadResumeButton.addActionListener(e -> {
-
-            JFileChooser chooser =
-                    new JFileChooser();
-
-            chooser.setDialogTitle(
-                    "Select Resume"
-            );
-
-            int result =
-                    chooser.showOpenDialog(
-                            frame
-                    );
-
-            if (result !=
-                    JFileChooser.APPROVE_OPTION) {
-                return;
-            }
-
-            File selectedFile =
-                    chooser.getSelectedFile();
-
-            try {
-
-                Path uploadDirectory =
-                        Path.of(
-                                "uploads",
-                                "resumes"
-                        );
-
-                Files.createDirectories(
-                        uploadDirectory
-                );
-
-                String fileName =
-                        studentIdHolder[0]
-                                + "_resume_"
-                                + selectedFile.getName();
-
-                Path destination =
-                        uploadDirectory.resolve(
-                                fileName
-                        );
-
-                Files.copy(
-                        selectedFile.toPath(),
-                        destination,
-                        StandardCopyOption.REPLACE_EXISTING
-                );
-
-                String relativePath =
-                        destination
-                                .toString();
-
-                String sql = """
-                        UPDATE students
-                        SET resume_path = ?
-                        WHERE student_id = ?
-                        """;
-
-                try (
-                        Connection connection =
-                                DatabaseConnection.getConnection();
-
-                        PreparedStatement statement =
-                                connection.prepareStatement(sql)
-                ) {
-
-                    statement.setString(
-                            1,
-                            relativePath
-                    );
-
-                    statement.setString(
-                            2,
-                            studentIdHolder[0]
-                    );
-
-                    statement.executeUpdate();
-                }
-
-                resumePathHolder[0] =
-                        relativePath;
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Resume uploaded successfully!",
-                        "Success",
-                        JOptionPane.INFORMATION_MESSAGE
-                );
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Error uploading resume:\n"
-                                + ex.getMessage(),
-                        "Upload Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        // ==========================================
-        // OPEN RESUME
-        // ==========================================
-
-        openResumeButton.addActionListener(e -> {
-
-            String resumePath =
-                    resumePathHolder[0];
-
-            if (resumePath == null ||
-                    resumePath.trim().isEmpty()) {
-
-                JOptionPane.showMessageDialog(
-        frame,
-        "No resume uploaded yet.",
-        "Resume",
-        JOptionPane.INFORMATION_MESSAGE
-);
-
-                return;
-            }
-
-            try {
-
-                File file =
-                        new File(resumePath);
-
-                if (!file.exists()) {
-
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "Resume file not found:\n"
-                                    + file.getAbsolutePath(),
-                            "Resume Error",
-                            JOptionPane.ERROR_MESSAGE
-                    );
-
-                    return;
-                }
-
-                Desktop.getDesktop().open(
-                        file
-                );
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Unable to open resume:\n"
-                                + ex.getMessage(),
-                        "Resume Error",
-                        JOptionPane.ERROR_MESSAGE
-                );
-            }
-        });
-
-        // ==========================================
-        // CLOSE
-        // ==========================================
-
-        closeButton.addActionListener(
-                e -> frame.dispose()
-        );
-
-        // ==========================================
-        // ADD EVERYTHING
-        // ==========================================
+        // ARRANGE ALL SECTIONS
 
         contentPanel.add(detailsPanel);
-
-        contentPanel.add(
-                Box.createVerticalStrut(15)
-        );
-
+        contentPanel.add(Box.createVerticalStrut(12));
+        contentPanel.add(parentPanel);
+        contentPanel.add(Box.createVerticalStrut(12));
         contentPanel.add(middlePanel);
-
-        contentPanel.add(
-                Box.createVerticalStrut(15)
-        );
-
+        contentPanel.add(Box.createVerticalStrut(12));
         contentPanel.add(certificatesPanel);
-
-        contentPanel.add(
-                Box.createVerticalStrut(15)
-        );
-
+        contentPanel.add(Box.createVerticalStrut(12));
         contentPanel.add(resumePanel);
 
         mainPanel.add(
@@ -1566,220 +259,436 @@ public class StudentProfile {
                 BorderLayout.CENTER
         );
 
-        mainPanel.add(
-                bottomPanel,
-                BorderLayout.SOUTH
-        );
-
         frame.add(mainPanel);
 
-        // First load
-        loadProfile.run();
+        // TRACK THE LOGGED-IN STUDENT
+
+        String[] studentIdHolder = {null};
+
+        // SAVE PARENT DETAILS
+
+        saveParentButton.addActionListener(e -> {
+            saveParentDetails(
+                    frame,
+                    studentIdHolder[0],
+                    motherNameField,
+                    motherMobileField,
+                    fatherNameField,
+                    fatherMobileField,
+                    parentInstruction
+            );
+        });
+
+        // LOAD PROFILE FROM MYSQL
+
+        String sql = """
+                SELECT
+                    s.student_id,
+                    s.name,
+                    u.college_email,
+                    s.mobile,
+                    s.parent_name,
+                    s.parent_mobile,
+                    s.mother_name,
+                    s.mother_mobile,
+                    s.father_name,
+                    s.father_mobile,
+                    s.department,
+                    s.study_year,
+                    s.cgpa,
+                    s.active_backlogs,
+                    s.resume_path
+                FROM students s
+                JOIN users u ON s.user_id = u.user_id
+                WHERE LOWER(u.college_email) = LOWER(?)
+                """;
+
+        try (
+                Connection connection =
+                        DatabaseConnection.getConnection();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(sql)
+        ) {
+            statement.setString(1, email);
+
+            String currentStudentId;
+
+            try (ResultSet result = statement.executeQuery()) {
+
+                if (!result.next()) {
+                    JOptionPane.showMessageDialog(
+                            frame,
+                            "Student profile not found."
+                    );
+                    frame.dispose();
+                    return;
+                }
+
+                currentStudentId = result.getString("student_id");
+
+                studentIdHolder[0] = currentStudentId;
+
+                nameValue.setText(textOrEmpty(result.getString("name")));
+                studentIdValue.setText(currentStudentId);
+                emailValue.setText(
+                        textOrEmpty(result.getString("college_email"))
+                );
+                mobileValue.setText(textOrEmpty(result.getString("mobile")));
+                departmentValue.setText(
+                        textOrEmpty(result.getString("department"))
+                );
+
+                Object studyYear = result.getObject("study_year");
+                yearValue.setText(
+                        studyYear == null ? "" : studyYear.toString()
+                );
+
+                Object cgpa = result.getObject("cgpa");
+                cgpaValue.setText(
+                        cgpa == null ? "" : cgpa.toString()
+                );
+
+                backlogValue.setText(
+                        String.valueOf(result.getInt("active_backlogs"))
+                );
+
+                motherNameField.setText(
+                        textOrEmpty(result.getString("mother_name"))
+                );
+                motherMobileField.setText(
+                        textOrEmpty(result.getString("mother_mobile"))
+                );
+                fatherNameField.setText(
+                        textOrEmpty(result.getString("father_name"))
+                );
+                fatherMobileField.setText(
+                        textOrEmpty(result.getString("father_mobile"))
+                );
+
+                resumePathHolder[0] = result.getString("resume_path");
+
+                if (resumePathHolder[0] != null
+                        && !resumePathHolder[0].trim().isEmpty()) {
+                    resumeButton.setText("View Resume Location");
+                } else {
+                    resumeButton.setText("No Resume Uploaded");
+                }
+
+                // PRESERVE OLD SINGLE-PARENT DATA
+
+                String oldParentName =
+                        textOrEmpty(result.getString("parent_name"));
+                String oldParentMobile =
+                        textOrEmpty(result.getString("parent_mobile"));
+
+                boolean newParentDetailsEmpty =
+                        motherNameField.getText().trim().isEmpty()
+                        && motherMobileField.getText().trim().isEmpty()
+                        && fatherNameField.getText().trim().isEmpty()
+                        && fatherMobileField.getText().trim().isEmpty();
+
+                if (newParentDetailsEmpty
+                        && (!oldParentName.isEmpty()
+                        || !oldParentMobile.isEmpty())) {
+
+                    parentInstruction.setText(
+                            "Previously saved parent contact: "
+                            + oldParentName + " / " + oldParentMobile
+                            + ". Enter it under the correct parent fields "
+                            + "before saving, if applicable."
+                    );
+                }
+            }
+
+            saveParentButton.setEnabled(true);
+
+            skillsArea.setText(
+                    loadSkills(connection, currentStudentId)
+            );
+
+            achievementsArea.setText(
+                    loadAchievements(connection, currentStudentId)
+            );
+
+            certificatesArea.setText(
+                    loadCertificates(connection, currentStudentId)
+            );
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Database error: " + e.getMessage(),
+                    "Profile Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            e.printStackTrace();
+            frame.dispose();
+            return;
+        }
 
         frame.setVisible(true);
     }
 
-    // ==========================================
-    // LOAD SKILLS
-    // ==========================================
+    // SAVE AND VALIDATE PARENT DETAILS
 
-    private static void loadSkills(
-            Connection connection,
+    private static void saveParentDetails(
+            JFrame frame,
             String studentId,
-            JTextArea area
-    ) throws SQLException {
+            JTextField motherNameField,
+            JTextField motherMobileField,
+            JTextField fatherNameField,
+            JTextField fatherMobileField,
+            JTextArea instruction) {
+
+        if (studentId == null) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Student information has not loaded."
+            );
+            return;
+        }
+
+        String motherName = motherNameField.getText().trim();
+        String motherMobile = motherMobileField.getText().trim();
+        String fatherName = fatherNameField.getText().trim();
+        String fatherMobile = fatherMobileField.getText().trim();
+
+        boolean motherNameEmpty = motherName.isEmpty();
+        boolean motherMobileEmpty = motherMobile.isEmpty();
+        boolean fatherNameEmpty = fatherName.isEmpty();
+        boolean fatherMobileEmpty = fatherMobile.isEmpty();
+
+        // A PARENT'S NAME AND PHONE MUST BE ENTERED TOGETHER
+
+        if (motherNameEmpty != motherMobileEmpty) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Enter both the mother's name and mobile number, "
+                    + "or leave both fields blank."
+            );
+            return;
+        }
+
+        if (fatherNameEmpty != fatherMobileEmpty) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Enter both the father's name and mobile number, "
+                    + "or leave both fields blank."
+            );
+            return;
+        }
+
+        // AT LEAST ONE COMPLETE PARENT CONTACT IS REQUIRED
+
+        if ((motherNameEmpty && motherMobileEmpty)
+                && (fatherNameEmpty && fatherMobileEmpty)) {
+
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "At least one complete parent contact is required."
+            );
+            return;
+        }
+
+        // VALIDATE ANY PROVIDED MOBILE NUMBERS
+
+        if (!motherMobileEmpty && !motherMobile.matches("\\d{10}")) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Mother's mobile number must contain exactly 10 digits."
+            );
+            return;
+        }
+
+        if (!fatherMobileEmpty && !fatherMobile.matches("\\d{10}")) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Father's mobile number must contain exactly 10 digits."
+            );
+            return;
+        }
+
+        // KEEP THE OLD GENERIC FIELDS FOR COMPATIBILITY
+
+        String primaryParentName =
+                !motherNameEmpty ? motherName : fatherName;
+
+        String primaryParentMobile =
+                !motherMobileEmpty ? motherMobile : fatherMobile;
+
+        String updateSql = """
+                UPDATE students
+                SET
+                    mother_name = ?,
+                    mother_mobile = ?,
+                    father_name = ?,
+                    father_mobile = ?,
+                    parent_name = ?,
+                    parent_mobile = ?
+                WHERE student_id = ?
+                """;
+
+        try (
+                Connection connection =
+                        DatabaseConnection.getConnection();
+
+                PreparedStatement statement =
+                        connection.prepareStatement(updateSql)
+        ) {
+            statement.setString(1, nullableText(motherName));
+            statement.setString(2, nullableText(motherMobile));
+            statement.setString(3, nullableText(fatherName));
+            statement.setString(4, nullableText(fatherMobile));
+            statement.setString(5, primaryParentName);
+            statement.setString(6, primaryParentMobile);
+            statement.setString(7, studentId);
+
+            int rows = statement.executeUpdate();
+
+            if (rows > 0) {
+                instruction.setText(
+                        "Parent details saved successfully."
+                );
+
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Parent contact details saved successfully!"
+                );
+            } else {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "No student record was updated. "
+                        + "Please reopen your profile and try again."
+                );
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(
+                    frame,
+                    "Could not save parent details: " + e.getMessage(),
+                    "Save Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+            e.printStackTrace();
+        }
+    }
+
+    // SKILLS LIST
+
+    private static String loadSkills(
+            Connection connection,
+            String studentId) throws SQLException {
 
         String sql = """
                 SELECT skill_name
                 FROM student_skills
                 WHERE student_id = ?
-                ORDER BY skill_id
                 """;
 
-        StringBuilder builder =
-                new StringBuilder();
+        StringBuilder items = new StringBuilder();
 
-        try (
-                PreparedStatement statement =
-                        connection.prepareStatement(sql)
-        ) {
+        try (PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
 
-            statement.setString(
-                    1,
-                    studentId
-            );
+            statement.setString(1, studentId);
 
-            try (
-                    ResultSet result =
-                            statement.executeQuery()
-            ) {
-
+            try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
-
-                    builder.append("• ")
-                            .append(
-                                    result.getString(
-                                            "skill_name"
-                                    )
-                            )
+                    items.append("- ")
+                            .append(result.getString("skill_name"))
                             .append("\n");
                 }
             }
         }
 
-        area.setText(
-                builder.toString()
-        );
+        return items.length() == 0
+                ? "No skills added yet."
+                : items.toString();
     }
 
-    // ==========================================
-    // LOAD ACHIEVEMENTS
-    // ==========================================
+    // ACHIEVEMENTS LIST
 
-    private static void loadAchievements(
+    private static String loadAchievements(
             Connection connection,
-            String studentId,
-            JTextArea area
-    ) throws SQLException {
+            String studentId) throws SQLException {
 
         String sql = """
                 SELECT achievement_name, description
                 FROM achievements
                 WHERE student_id = ?
-                ORDER BY achievement_id
                 """;
 
-        StringBuilder builder =
-                new StringBuilder();
+        StringBuilder items = new StringBuilder();
 
-        try (
-                PreparedStatement statement =
-                        connection.prepareStatement(sql)
-        ) {
+        try (PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
 
-            statement.setString(
-                    1,
-                    studentId
-            );
+            statement.setString(1, studentId);
 
-            try (
-                    ResultSet result =
-                            statement.executeQuery()
-            ) {
-
+            try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
 
-                    builder.append("• ")
-                            .append(
-                                    result.getString(
-                                            "achievement_name"
-                                    )
-                            );
+                    items.append("- ")
+                            .append(result.getString("achievement_name"));
 
-                    String description =
-                            result.getString(
-                                    "description"
-                            );
+                    String description = result.getString("description");
 
-                    if (description != null &&
-                            !description.isEmpty()) {
-
-                        builder.append(
-                                " - "
-                        ).append(
-                                description
-                        );
+                    if (description != null
+                            && !description.trim().isEmpty()) {
+                        items.append(" - ").append(description);
                     }
 
-                    builder.append("\n");
+                    items.append("\n");
                 }
             }
         }
 
-        area.setText(
-                builder.toString()
-        );
+        return items.length() == 0
+                ? "No achievements added yet."
+                : items.toString();
     }
 
-    // ==========================================
-    // LOAD CERTIFICATES
-    // ==========================================
+    // CERTIFICATES LIST
 
-    private static void loadCertificates(
+    private static String loadCertificates(
             Connection connection,
-            String studentId,
-            JTextArea area
-    ) throws SQLException {
+            String studentId) throws SQLException {
 
         String sql = """
-                SELECT certificate_name, certificate_url
+                SELECT certificate_name
                 FROM certificates
                 WHERE student_id = ?
-                ORDER BY certificate_id
                 """;
 
-        StringBuilder builder =
-                new StringBuilder();
+        StringBuilder items = new StringBuilder();
 
-        try (
-                PreparedStatement statement =
-                        connection.prepareStatement(sql)
-        ) {
+        try (PreparedStatement statement =
+                     connection.prepareStatement(sql)) {
 
-            statement.setString(
-                    1,
-                    studentId
-            );
+            statement.setString(1, studentId);
 
-            try (
-                    ResultSet result =
-                            statement.executeQuery()
-            ) {
-
+            try (ResultSet result = statement.executeQuery()) {
                 while (result.next()) {
-
-                    builder.append("• ")
-                            .append(
-                                    result.getString(
-                                            "certificate_name"
-                                    )
-                            );
-
-                    String url =
-                            result.getString(
-                                    "certificate_url"
-                            );
-
-                    if (url != null &&
-                            !url.isEmpty()) {
-
-                        builder.append(
-                                " - "
-                        ).append(url);
-                    }
-
-                    builder.append("\n");
+                    items.append("- ")
+                            .append(result.getString("certificate_name"))
+                            .append("\n");
                 }
             }
         }
 
-        area.setText(
-                builder.toString()
-        );
+        return items.length() == 0
+                ? "No certificates added yet."
+                : items.toString();
     }
 
-    // ==========================================
-    // SAFE STRING
-    // ==========================================
+    private static String textOrEmpty(String value) {
+        return value == null ? "" : value;
+    }
 
-    private static String safe(
-            String value
-    ) {
-
-        if (value == null) {
-            return "-";
-        }
-
-        return value;
+    private static String nullableText(String value) {
+        return value == null || value.trim().isEmpty()
+                ? null
+                : value.trim();
     }
 }
