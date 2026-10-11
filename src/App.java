@@ -6,7 +6,7 @@ public class App {
 
     public static void main(String[] args) {
 
-        JFrame frame = new JFrame("Campus Placement Management System");
+        JFrame frame = new JFrame("G. Narayanamma Institute of Technology");
         frame.setSize(600, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -14,7 +14,7 @@ public class App {
         JPanel panel = new JPanel();
         panel.setLayout(null);
 
-        JLabel title = new JLabel("CAMPUS PLACEMENT MANAGEMENT SYSTEM");
+        JLabel title = new JLabel("G. Narayanamma Institute of Technology");
         title.setFont(new Font("Arial", Font.BOLD, 20));
         title.setBounds(80, 40, 470, 30);
 

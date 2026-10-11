@@ -12,7 +12,7 @@ public class FacultyDashboard {
     // MAIN FACULTY DASHBOARD
     // ==============================
 
-    public static void showDashboard() {
+public static void showDashboard() {
 
         frame = new JFrame("G.Narayanamma Institute of Technology");
         frame.setSize(1100, 700);
