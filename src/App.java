@@ -6,7 +6,7 @@ public class App {
 
     public static void main(String[] args) {
 
-        JFrame frame = new JFrame("G. Narayanamma Institute of Technology");
+        JFrame frame = new JFrame("Campus Placement & Internship Management System");
         frame.setSize(600, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -14,7 +14,7 @@ public class App {
         JPanel panel = new JPanel();
         panel.setLayout(null);
 
-        JLabel title = new JLabel("G. Narayanamma Institute of Technology");
+        JLabel title = new JLabel("Campus Placement & Internship Management System");
         title.setFont(new Font("Arial", Font.BOLD, 20));
         title.setBounds(80, 40, 470, 30);
 
@@ -56,7 +56,7 @@ showPasswordButton.addActionListener(e -> {
         studentButton.setBounds(230, 215, 100, 25);
         studentButton.setSelected(true);
 
-        JRadioButton facultyButton = new JRadioButton("Faculty");
+        JRadioButton facultyButton = new JRadioButton("Coordinator");
         facultyButton.setBounds(340, 215, 100, 25);
 
         ButtonGroup roleGroup = new ButtonGroup();

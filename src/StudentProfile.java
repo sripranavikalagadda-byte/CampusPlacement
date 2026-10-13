@@ -2,6 +2,10 @@
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.sql.*;
 
 public class StudentProfile {
@@ -99,6 +103,12 @@ public class StudentProfile {
         JTextField fatherNameField = new JTextField();
         JTextField fatherMobileField = new JTextField();
 
+        // Parent fields remain display-only.
+        motherNameField.setEditable(false);
+        motherMobileField.setEditable(false);
+        fatherNameField.setEditable(false);
+        fatherMobileField.setEditable(false);
+
         parentFieldsPanel.add(new JLabel("Mother's Name:"));
         parentFieldsPanel.add(motherNameField);
 
@@ -112,8 +122,7 @@ public class StudentProfile {
         parentFieldsPanel.add(fatherMobileField);
 
         JTextArea parentInstruction = new JTextArea(
-                "Enter the name and 10-digit mobile number of at least " +
-                "one parent. The other parent's fields may remain blank."
+                "Use Edit Profile to update your personal and parent details."
         );
         parentInstruction.setEditable(false);
         parentInstruction.setLineWrap(true);
@@ -122,8 +131,7 @@ public class StudentProfile {
         parentInstruction.setFont(new Font("Arial", Font.PLAIN, 12));
         parentInstruction.setRows(2);
 
-        JButton saveParentButton = new JButton("Save Parent Details");
-        saveParentButton.setEnabled(false);
+        JButton editProfileButton = new JButton("Edit Profile");
 
         JPanel parentBottomPanel = new JPanel(new BorderLayout(8, 5));
         parentBottomPanel.add(
@@ -131,13 +139,13 @@ public class StudentProfile {
                 BorderLayout.CENTER
         );
 
-        JPanel saveButtonPanel = new JPanel(
+        JPanel editButtonPanel = new JPanel(
                 new FlowLayout(FlowLayout.RIGHT)
         );
-        saveButtonPanel.add(saveParentButton);
+        editButtonPanel.add(editProfileButton);
 
         parentBottomPanel.add(
-                saveButtonPanel,
+                editButtonPanel,
                 BorderLayout.SOUTH
         );
 
@@ -221,10 +229,114 @@ public class StudentProfile {
                 )
         );
 
-        JButton resumeButton = new JButton("View Resume");
-        String[] resumePathHolder = {null};
+        JButton uploadResumeButton = new JButton("Upload Resume");
+        JButton openResumeButton = new JButton("Open Resume");
 
-        resumeButton.addActionListener(e -> {
+        String[] resumePathHolder = {null};
+        String[] studentIdHolder = {null};
+
+        uploadResumeButton.addActionListener(e -> {
+
+            if (studentIdHolder[0] == null) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Student profile has not loaded."
+                );
+                return;
+            }
+
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle("Select Your Resume");
+
+            int result = chooser.showOpenDialog(frame);
+
+            if (result != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+
+            File selectedFile = chooser.getSelectedFile();
+
+            try {
+                Path uploadDirectory =
+                        Path.of("uploads", "resumes");
+
+                Files.createDirectories(uploadDirectory);
+
+                String originalName = selectedFile.getName();
+                String extension = "";
+
+                int dot = originalName.lastIndexOf('.');
+                if (dot >= 0) {
+                    extension = originalName.substring(dot);
+                }
+
+                String savedName =
+                        studentIdHolder[0].replaceAll(
+                                "[^a-zA-Z0-9_-]", "_"
+                        )
+                        + "_" + System.currentTimeMillis()
+                        + extension;
+
+                Path destination =
+                        uploadDirectory.resolve(savedName);
+
+                Files.copy(
+                        selectedFile.toPath(),
+                        destination,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+
+                String savedPath =
+                        destination.toAbsolutePath().toString();
+
+                String updateSql = """
+                        UPDATE students
+                        SET resume_path = ?
+                        WHERE student_id = ?
+                        """;
+
+                try (
+                        Connection connection =
+                                DatabaseConnection.getConnection();
+
+                        PreparedStatement statement =
+                                connection.prepareStatement(updateSql)
+                ) {
+                    statement.setString(1, savedPath);
+                    statement.setString(2, studentIdHolder[0]);
+
+                    int rows = statement.executeUpdate();
+
+                    if (rows > 0) {
+                        resumePathHolder[0] = savedPath;
+                        openResumeButton.setEnabled(true);
+
+                        JOptionPane.showMessageDialog(
+                                frame,
+                                "Resume uploaded successfully!"
+                        );
+                    } else {
+                        JOptionPane.showMessageDialog(
+                                frame,
+                                "Resume was copied, but the student record "
+                                + "could not be updated."
+                        );
+                    }
+                }
+
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Could not upload resume: " + ex.getMessage(),
+                        "Resume Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                ex.printStackTrace();
+            }
+        });
+
+        openResumeButton.addActionListener(e -> {
+
             String path = resumePathHolder[0];
 
             if (path == null || path.trim().isEmpty()) {
@@ -232,15 +344,43 @@ public class StudentProfile {
                         frame,
                         "No resume has been uploaded."
                 );
-            } else {
+                return;
+            }
+
+            try {
+                File resumeFile = new File(path);
+
+                if (!resumeFile.exists()) {
+                    JOptionPane.showMessageDialog(
+                            frame,
+                            "Resume file not found at:\n" + path
+                    );
+                    return;
+                }
+
+                if (!Desktop.isDesktopSupported()) {
+                    JOptionPane.showMessageDialog(
+                            frame,
+                            "Opening files is not supported on this system."
+                    );
+                    return;
+                }
+
+                Desktop.getDesktop().open(resumeFile);
+
+            } catch (Exception ex) {
                 JOptionPane.showMessageDialog(
                         frame,
-                        "Resume location:\n" + path
+                        "Could not open resume: " + ex.getMessage(),
+                        "Resume Error",
+                        JOptionPane.ERROR_MESSAGE
                 );
+                ex.printStackTrace();
             }
         });
 
-        resumePanel.add(resumeButton);
+        resumePanel.add(uploadResumeButton);
+        resumePanel.add(openResumeButton);
 
         // ARRANGE ALL SECTIONS
 
@@ -261,22 +401,200 @@ public class StudentProfile {
 
         frame.add(mainPanel);
 
-        // TRACK THE LOGGED-IN STUDENT
+        // EDIT PROFILE: STUDENT AND PARENT DETAILS
 
-        String[] studentIdHolder = {null};
+        editProfileButton.addActionListener(e -> {
 
-        // SAVE PARENT DETAILS
+            if (studentIdHolder[0] == null) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Student profile has not loaded."
+                );
+                return;
+            }
 
-        saveParentButton.addActionListener(e -> {
-            saveParentDetails(
+            JTextField editName = new JTextField(nameValue.getText());
+            JTextField editMobile = new JTextField(mobileValue.getText());
+            JTextField editMotherName =
+                    new JTextField(motherNameField.getText());
+            JTextField editMotherMobile =
+                    new JTextField(motherMobileField.getText());
+            JTextField editFatherName =
+                    new JTextField(fatherNameField.getText());
+            JTextField editFatherMobile =
+                    new JTextField(fatherMobileField.getText());
+
+            JPanel editPanel = new JPanel(new GridLayout(6, 2, 8, 8));
+
+            editPanel.add(new JLabel("Student Name:"));
+            editPanel.add(editName);
+
+            editPanel.add(new JLabel("Student Mobile:"));
+            editPanel.add(editMobile);
+
+            editPanel.add(new JLabel("Mother's Name:"));
+            editPanel.add(editMotherName);
+
+            editPanel.add(new JLabel("Mother's Mobile:"));
+            editPanel.add(editMotherMobile);
+
+            editPanel.add(new JLabel("Father's Name:"));
+            editPanel.add(editFatherName);
+
+            editPanel.add(new JLabel("Father's Mobile:"));
+            editPanel.add(editFatherMobile);
+
+            int choice = JOptionPane.showConfirmDialog(
                     frame,
-                    studentIdHolder[0],
-                    motherNameField,
-                    motherMobileField,
-                    fatherNameField,
-                    fatherMobileField,
-                    parentInstruction
+                    editPanel,
+                    "Edit Profile",
+                    JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE
             );
+
+            if (choice != JOptionPane.OK_OPTION) {
+                return;
+            }
+
+            String newName = editName.getText().trim();
+            String newMobile = editMobile.getText().trim();
+            String motherName = editMotherName.getText().trim();
+            String motherMobile = editMotherMobile.getText().trim();
+            String fatherName = editFatherName.getText().trim();
+            String fatherMobile = editFatherMobile.getText().trim();
+
+            if (newName.isEmpty() || newMobile.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Student name and mobile number are required."
+                );
+                return;
+            }
+
+            if (!newMobile.matches("\\d{10}")) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Student mobile number must contain exactly 10 digits."
+                );
+                return;
+            }
+
+            if (motherName.isEmpty() != motherMobile.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Enter both the mother's name and mobile number, "
+                        + "or leave both blank."
+                );
+                return;
+            }
+
+            if (fatherName.isEmpty() != fatherMobile.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Enter both the father's name and mobile number, "
+                        + "or leave both blank."
+                );
+                return;
+            }
+
+            if (motherName.isEmpty() && fatherName.isEmpty()) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Enter at least one complete parent contact."
+                );
+                return;
+            }
+
+            if (!motherMobile.isEmpty()
+                    && !motherMobile.matches("\\d{10}")) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Mother's mobile number must contain exactly 10 digits."
+                );
+                return;
+            }
+
+            if (!fatherMobile.isEmpty()
+                    && !fatherMobile.matches("\\d{10}")) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Father's mobile number must contain exactly 10 digits."
+                );
+                return;
+            }
+
+            String primaryParentName =
+                    !motherName.isEmpty() ? motherName : fatherName;
+
+            String primaryParentMobile =
+                    !motherMobile.isEmpty() ? motherMobile : fatherMobile;
+
+            String updateSql = """
+                    UPDATE students
+                    SET
+                        name = ?,
+                        mobile = ?,
+                        mother_name = ?,
+                        mother_mobile = ?,
+                        father_name = ?,
+                        father_mobile = ?,
+                        parent_name = ?,
+                        parent_mobile = ?
+                    WHERE student_id = ?
+                    """;
+
+            try (
+                    Connection connection =
+                            DatabaseConnection.getConnection();
+
+                    PreparedStatement statement =
+                            connection.prepareStatement(updateSql)
+            ) {
+                statement.setString(1, newName);
+                statement.setString(2, newMobile);
+                statement.setString(3, nullableText(motherName));
+                statement.setString(4, nullableText(motherMobile));
+                statement.setString(5, nullableText(fatherName));
+                statement.setString(6, nullableText(fatherMobile));
+                statement.setString(7, primaryParentName);
+                statement.setString(8, primaryParentMobile);
+                statement.setString(9, studentIdHolder[0]);
+
+                int rows = statement.executeUpdate();
+
+                if (rows > 0) {
+                    nameValue.setText(newName);
+                    mobileValue.setText(newMobile);
+
+                    motherNameField.setText(motherName);
+                    motherMobileField.setText(motherMobile);
+                    fatherNameField.setText(fatherName);
+                    fatherMobileField.setText(fatherMobile);
+
+                    parentInstruction.setText(
+                            "Profile and parent details updated successfully."
+                    );
+
+                    JOptionPane.showMessageDialog(
+                            frame,
+                            "Profile updated successfully!"
+                    );
+                } else {
+                    JOptionPane.showMessageDialog(
+                            frame,
+                            "No student record was updated."
+                    );
+                }
+
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(
+                        frame,
+                        "Could not update profile: " + ex.getMessage(),
+                        "Update Error",
+                        JOptionPane.ERROR_MESSAGE
+                );
+                ex.printStackTrace();
+            }
         });
 
         // LOAD PROFILE FROM MYSQL
@@ -326,7 +644,6 @@ public class StudentProfile {
                 }
 
                 currentStudentId = result.getString("student_id");
-
                 studentIdHolder[0] = currentStudentId;
 
                 nameValue.setText(textOrEmpty(result.getString("name")));
@@ -368,12 +685,10 @@ public class StudentProfile {
 
                 resumePathHolder[0] = result.getString("resume_path");
 
-                if (resumePathHolder[0] != null
-                        && !resumePathHolder[0].trim().isEmpty()) {
-                    resumeButton.setText("View Resume Location");
-                } else {
-                    resumeButton.setText("No Resume Uploaded");
-                }
+                openResumeButton.setEnabled(
+                        resumePathHolder[0] != null
+                        && !resumePathHolder[0].trim().isEmpty()
+                );
 
                 // PRESERVE OLD SINGLE-PARENT DATA
 
@@ -395,13 +710,11 @@ public class StudentProfile {
                     parentInstruction.setText(
                             "Previously saved parent contact: "
                             + oldParentName + " / " + oldParentMobile
-                            + ". Enter it under the correct parent fields "
-                            + "before saving, if applicable."
+                            + ". Update it under the correct parent fields "
+                            + "using Edit Profile."
                     );
                 }
             }
-
-            saveParentButton.setEnabled(true);
 
             skillsArea.setText(
                     loadSkills(connection, currentStudentId)
@@ -428,150 +741,6 @@ public class StudentProfile {
         }
 
         frame.setVisible(true);
-    }
-
-    // SAVE AND VALIDATE PARENT DETAILS
-
-    private static void saveParentDetails(
-            JFrame frame,
-            String studentId,
-            JTextField motherNameField,
-            JTextField motherMobileField,
-            JTextField fatherNameField,
-            JTextField fatherMobileField,
-            JTextArea instruction) {
-
-        if (studentId == null) {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "Student information has not loaded."
-            );
-            return;
-        }
-
-        String motherName = motherNameField.getText().trim();
-        String motherMobile = motherMobileField.getText().trim();
-        String fatherName = fatherNameField.getText().trim();
-        String fatherMobile = fatherMobileField.getText().trim();
-
-        boolean motherNameEmpty = motherName.isEmpty();
-        boolean motherMobileEmpty = motherMobile.isEmpty();
-        boolean fatherNameEmpty = fatherName.isEmpty();
-        boolean fatherMobileEmpty = fatherMobile.isEmpty();
-
-        // A PARENT'S NAME AND PHONE MUST BE ENTERED TOGETHER
-
-        if (motherNameEmpty != motherMobileEmpty) {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "Enter both the mother's name and mobile number, "
-                    + "or leave both fields blank."
-            );
-            return;
-        }
-
-        if (fatherNameEmpty != fatherMobileEmpty) {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "Enter both the father's name and mobile number, "
-                    + "or leave both fields blank."
-            );
-            return;
-        }
-
-        // AT LEAST ONE COMPLETE PARENT CONTACT IS REQUIRED
-
-        if ((motherNameEmpty && motherMobileEmpty)
-                && (fatherNameEmpty && fatherMobileEmpty)) {
-
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "At least one complete parent contact is required."
-            );
-            return;
-        }
-
-        // VALIDATE ANY PROVIDED MOBILE NUMBERS
-
-        if (!motherMobileEmpty && !motherMobile.matches("\\d{10}")) {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "Mother's mobile number must contain exactly 10 digits."
-            );
-            return;
-        }
-
-        if (!fatherMobileEmpty && !fatherMobile.matches("\\d{10}")) {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "Father's mobile number must contain exactly 10 digits."
-            );
-            return;
-        }
-
-        // KEEP THE OLD GENERIC FIELDS FOR COMPATIBILITY
-
-        String primaryParentName =
-                !motherNameEmpty ? motherName : fatherName;
-
-        String primaryParentMobile =
-                !motherMobileEmpty ? motherMobile : fatherMobile;
-
-        String updateSql = """
-                UPDATE students
-                SET
-                    mother_name = ?,
-                    mother_mobile = ?,
-                    father_name = ?,
-                    father_mobile = ?,
-                    parent_name = ?,
-                    parent_mobile = ?
-                WHERE student_id = ?
-                """;
-
-        try (
-                Connection connection =
-                        DatabaseConnection.getConnection();
-
-                PreparedStatement statement =
-                        connection.prepareStatement(updateSql)
-        ) {
-            statement.setString(1, nullableText(motherName));
-            statement.setString(2, nullableText(motherMobile));
-            statement.setString(3, nullableText(fatherName));
-            statement.setString(4, nullableText(fatherMobile));
-            statement.setString(5, primaryParentName);
-            statement.setString(6, primaryParentMobile);
-            statement.setString(7, studentId);
-
-            int rows = statement.executeUpdate();
-
-            if (rows > 0) {
-                instruction.setText(
-                        "Parent details saved successfully."
-                );
-
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "Parent contact details saved successfully!"
-                );
-            } else {
-                JOptionPane.showMessageDialog(
-                        frame,
-                        "No student record was updated. "
-                        + "Please reopen your profile and try again."
-                );
-            }
-
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(
-                    frame,
-                    "Could not save parent details: " + e.getMessage(),
-                    "Save Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            e.printStackTrace();
-        }
     }
 
     // SKILLS LIST

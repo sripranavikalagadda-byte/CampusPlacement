@@ -1,8 +1,15 @@
+
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+
 import java.awt.*;
 import java.sql.*;
 import java.time.format.DateTimeFormatter;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.List;
 
 public class FacultyInternshipApplications {
 
@@ -16,23 +23,15 @@ public class FacultyInternshipApplications {
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
         );
 
-        JLabel titleLabel =
-                new JLabel("INTERNSHIP APPLICATIONS");
-
+        JLabel titleLabel = new JLabel("INTERNSHIP APPLICATIONS");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 22));
         mainPanel.add(titleLabel, BorderLayout.NORTH);
 
         String[] columns = {
-                "Application ID",
-                "Student ID",
-                "Student Name",
-                "Branch",
-                "CGPA",
-                "Backlogs",
-                "Company",
-                "Internship Role",
-                "Application Date",
-                "Status"
+                "Application ID", "Student ID", "Student Name",
+                "Branch", "CGPA", "Backlogs", "Company",
+                "Internship Role", "Application Date", "Status",
+                "Past Internships", "Actual Date"
         };
 
         DefaultTableModel model = new DefaultTableModel(columns, 0) {
@@ -40,32 +39,318 @@ public class FacultyInternshipApplications {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
+
+            @Override
+            public Class<?> getColumnClass(int column) {
+                if (column == 0 || column == 5 || column == 10) {
+                    return Integer.class;
+                }
+                if (column == 4) {
+                    return BigDecimal.class;
+                }
+                if (column == 11) {
+                    return java.sql.Date.class;
+                }
+                return String.class;
+            }
         };
 
         JTable table = new JTable(model);
         table.setRowHeight(25);
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        int[] widths = {
+                100, 115, 150, 75, 65, 75, 140, 150, 115, 100
+        };
+
+        for (int i = 0; i < widths.length; i++) {
+            table.getColumnModel().getColumn(i)
+                    .setPreferredWidth(widths[i]);
+        }
+
+        // Keep filtering/sorting data in the model but hide helper columns.
+        table.removeColumn(table.getColumnModel().getColumn(11));
+        table.removeColumn(table.getColumnModel().getColumn(10));
+
+        TableRowSorter<DefaultTableModel> sorter =
+                new TableRowSorter<>(model);
+        table.setRowSorter(sorter);
+
+        
+        // FILTER PANEL
+
+        JPanel filterPanel = new JPanel(
+                new GridLayout(2, 1, 4, 4)
+        );
+
+        filterPanel.setBorder(
+                BorderFactory.createTitledBorder(
+                        "Filter and Sort Applicants"
+                )
+        );
+
+        // FILTER ROW 1
+
+        JPanel firstFilterRow = new JPanel(
+                new FlowLayout(FlowLayout.LEFT, 8, 4)
+        );
+
+        JTextField searchField = new JTextField();
+        searchField.setPreferredSize(new Dimension(150, 26));
+
+        JComboBox<String> branchCombo = new JComboBox<>(
+                new String[]{"ALL"}
+        );
+
+        JTextField minCgpaField = new JTextField();
+        minCgpaField.setPreferredSize(new Dimension(75, 26));
+
+        firstFilterRow.add(new JLabel("Search ID/Name:"));
+        firstFilterRow.add(searchField);
+        firstFilterRow.add(new JLabel("Branch:"));
+        firstFilterRow.add(branchCombo);
+        firstFilterRow.add(new JLabel("Minimum CGPA:"));
+        firstFilterRow.add(minCgpaField);
+
+        // FILTER ROW 2
+
+        JPanel secondFilterRow = new JPanel(
+                new FlowLayout(FlowLayout.LEFT, 8, 4)
+        );
+
+        JTextField maxBacklogsField = new JTextField();
+        maxBacklogsField.setPreferredSize(new Dimension(45, 26));
+
+        JTextField minInternshipsField = new JTextField();
+        minInternshipsField.setPreferredSize(new Dimension(50, 26));
+
+        JComboBox<String> sortCombo = new JComboBox<>(
+                new String[]{
+                        "Newest Applications",
+                        "Oldest Applications",
+                        "Highest CGPA",
+                        "Lowest CGPA",
+                        "Fewest Backlogs",
+                        "Most Backlogs"
+                }
+        );
+
+        sortCombo.setPreferredSize(new Dimension(180, 26));
+
+        JButton applyButton = new JButton("Apply Filters");
+        JButton clearButton = new JButton("Clear");
+
+        secondFilterRow.add(new JLabel("Max Backlogs:"));
+        secondFilterRow.add(maxBacklogsField);
+        secondFilterRow.add(new JLabel("Min Past Internships:"));
+        secondFilterRow.add(minInternshipsField);
+        secondFilterRow.add(new JLabel("Sort By:"));
+        secondFilterRow.add(sortCombo);
+        secondFilterRow.add(applyButton);
+        secondFilterRow.add(clearButton);
+
+        filterPanel.add(firstFilterRow);
+        filterPanel.add(secondFilterRow);
+
+
+        // EXISTING ACTION BUTTONS
 
         JButton shortlistButton = new JButton("Shortlist");
         JButton selectedButton = new JButton("Mark Selected");
         JButton rejectButton = new JButton("Reject");
         JButton refreshButton = new JButton("Refresh");
 
-        JPanel buttonPanel =
-                new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 5));
+        JPanel actionPanel = new JPanel(
+                new FlowLayout(FlowLayout.LEFT, 8, 5)
+        );
+        actionPanel.add(shortlistButton);
+        actionPanel.add(selectedButton);
+        actionPanel.add(rejectButton);
+        actionPanel.add(refreshButton);
 
-        buttonPanel.add(shortlistButton);
-        buttonPanel.add(selectedButton);
-        buttonPanel.add(rejectButton);
-        buttonPanel.add(refreshButton);
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.add(filterPanel, BorderLayout.NORTH);
+        topPanel.add(actionPanel, BorderLayout.SOUTH);
 
-        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
-        centerPanel.add(buttonPanel, BorderLayout.NORTH);
-        centerPanel.add(new JScrollPane(table), BorderLayout.CENTER);
+        mainPanel.add(topPanel, BorderLayout.CENTER);
 
-        mainPanel.add(centerPanel, BorderLayout.CENTER);
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.add(new JScrollPane(table), BorderLayout.CENTER);
+        mainPanel.add(tablePanel, BorderLayout.SOUTH);
+
+        // Give the table the majority of the available height.
+        mainPanel.remove(tablePanel);
+        JPanel contentPanel = new JPanel(new BorderLayout(10, 10));
+        contentPanel.add(topPanel, BorderLayout.NORTH);
+        contentPanel.add(new JScrollPane(table), BorderLayout.CENTER);
+        mainPanel.add(contentPanel, BorderLayout.CENTER);
+
+        // LOAD APPLICATIONS
 
         loadApplications(model, mainPanel);
+        updateBranches(model, branchCombo);
+
+        // APPLY FILTERS AND SORTING
+
+        Runnable applyFilters = () -> {
+            try {
+                String search = searchField.getText().trim();
+                String branch = (String) branchCombo.getSelectedItem();
+
+                String cgpaText = minCgpaField.getText().trim();
+                String backlogText = maxBacklogsField.getText().trim();
+                String internshipsText =
+                        minInternshipsField.getText().trim();
+
+                BigDecimal minCgpa = cgpaText.isEmpty()
+                        ? null : new BigDecimal(cgpaText);
+
+                Integer maxBacklogs = backlogText.isEmpty()
+                        ? null : Integer.parseInt(backlogText);
+
+                Integer minInternships = internshipsText.isEmpty()
+                        ? null : Integer.parseInt(internshipsText);
+
+                if (minCgpa != null
+                        && (minCgpa.compareTo(BigDecimal.ZERO) < 0
+                        || minCgpa.compareTo(new BigDecimal("10")) > 0)) {
+                    throw new IllegalArgumentException(
+                            "Minimum CGPA must be between 0 and 10."
+                    );
+                }
+
+                if (maxBacklogs != null && maxBacklogs < 0) {
+                    throw new IllegalArgumentException(
+                            "Maximum backlogs cannot be negative."
+                    );
+                }
+
+                if (minInternships != null && minInternships < 0) {
+                    throw new IllegalArgumentException(
+                            "Minimum past internships cannot be negative."
+                    );
+                }
+
+                RowFilter<DefaultTableModel, Integer> filter =
+                        new RowFilter<>() {
+                    @Override
+                    public boolean include(
+                            Entry<? extends DefaultTableModel,
+                                    ? extends Integer> entry) {
+
+                        String studentId =
+                                String.valueOf(entry.getValue(1));
+                        String studentName =
+                                String.valueOf(entry.getValue(2));
+                        String studentBranch =
+                                String.valueOf(entry.getValue(3));
+
+                        if (!search.isEmpty()
+                                && !studentId.toLowerCase().contains(
+                                        search.toLowerCase())
+                                && !studentName.toLowerCase().contains(
+                                        search.toLowerCase())) {
+                            return false;
+                        }
+
+                        if (branch != null && !branch.equals("ALL")
+                                && !branch.equalsIgnoreCase(studentBranch)) {
+                            return false;
+                        }
+
+                        Object cgpaValue = entry.getValue(4);
+                        if (minCgpa != null && cgpaValue != null) {
+                            BigDecimal cgpa =
+                                    new BigDecimal(cgpaValue.toString());
+                            if (cgpa.compareTo(minCgpa) < 0) {
+                                return false;
+                            }
+                        } else if (minCgpa != null) {
+                            return false;
+                        }
+
+                        int backlogs =
+                                Integer.parseInt(entry.getValue(5).toString());
+
+                        if (maxBacklogs != null
+                                && backlogs > maxBacklogs) {
+                            return false;
+                        }
+
+                        int pastInternships =
+                                Integer.parseInt(entry.getValue(10).toString());
+
+                        if (minInternships != null
+                                && pastInternships < minInternships) {
+                            return false;
+                        }
+
+                        return true;
+                    }
+                };
+
+                sorter.setRowFilter(filter);
+
+                String sortChoice =
+                        (String) sortCombo.getSelectedItem();
+
+                int sortColumn;
+                SortOrder order;
+
+                switch (sortChoice) {
+                    case "Oldest Applications":
+                        sortColumn = 11;
+                        order = SortOrder.ASCENDING;
+                        break;
+                    case "Highest CGPA":
+                        sortColumn = 4;
+                        order = SortOrder.DESCENDING;
+                        break;
+                    case "Lowest CGPA":
+                        sortColumn = 4;
+                        order = SortOrder.ASCENDING;
+                        break;
+                    case "Fewest Backlogs":
+                        sortColumn = 5;
+                        order = SortOrder.ASCENDING;
+                        break;
+                    case "Most Backlogs":
+                        sortColumn = 5;
+                        order = SortOrder.DESCENDING;
+                        break;
+                    default:
+                        sortColumn = 11;
+                        order = SortOrder.DESCENDING;
+                }
+
+                sorter.setSortKeys(
+                        List.of(new RowSorter.SortKey(sortColumn, order))
+                );
+
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(
+                        mainPanel,
+                        "Enter valid numbers in the CGPA and filter fields."
+                );
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(mainPanel, ex.getMessage());
+            }
+        };
+
+        applyButton.addActionListener(e -> applyFilters.run());
+
+        clearButton.addActionListener(e -> {
+            searchField.setText("");
+            branchCombo.setSelectedItem("ALL");
+            minCgpaField.setText("");
+            maxBacklogsField.setText("");
+            minInternshipsField.setText("");
+            sortCombo.setSelectedItem("Newest Applications");
+            applyFilters.run();
+        });
+
+        // EXISTING STATUS ACTIONS
 
         shortlistButton.addActionListener(e ->
                 updateApplicationStatus(
@@ -85,11 +370,45 @@ public class FacultyInternshipApplications {
                 )
         );
 
-        refreshButton.addActionListener(e ->
-                loadApplications(model, mainPanel)
-        );
+        refreshButton.addActionListener(e -> {
+            loadApplications(model, mainPanel);
+            updateBranches(model, branchCombo);
+            applyFilters.run();
+        });
+
+        sortCombo.addActionListener(e -> applyFilters.run());
 
         return mainPanel;
+    }
+
+    private static void updateBranches(
+            DefaultTableModel model,
+            JComboBox<String> branchCombo) {
+
+        String selected = (String) branchCombo.getSelectedItem();
+
+        branchCombo.removeAllItems();
+        branchCombo.addItem("ALL");
+
+        Set<String> branches = new TreeSet<>(
+                String.CASE_INSENSITIVE_ORDER
+        );
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+            Object value = model.getValueAt(i, 3);
+            if (value != null && !value.toString().isBlank()) {
+                branches.add(value.toString());
+            }
+        }
+
+        for (String branch : branches) {
+            branchCombo.addItem(branch);
+        }
+
+        branchCombo.setSelectedItem(
+                selected != null && branches.contains(selected)
+                        ? selected : "ALL"
+        );
     }
 
     private static void loadApplications(
@@ -109,13 +428,14 @@ public class FacultyInternshipApplications {
                     i.company_name,
                     i.internship_role,
                     ia.application_date,
-                    ia.status
+                    ia.status,
+                    s.past_internships
                 FROM internship_applications ia
                 JOIN students s
                     ON ia.student_id = s.student_id
                 JOIN internships i
                     ON ia.internship_id = i.internship_id
-                ORDER BY ia.application_id DESC
+                ORDER BY ia.application_date DESC
                 """;
 
         try (Connection connection =
@@ -134,9 +454,8 @@ public class FacultyInternshipApplications {
                  ResultSet result = statement.executeQuery()) {
 
                 while (result.next()) {
-
-                    Date applicationDate =
-                            result.getDate("application_date");
+                    java.sql.Date applicationDate =
+                       result.getDate("application_date");
 
                     String dateText = applicationDate == null
                             ? ""
@@ -153,7 +472,9 @@ public class FacultyInternshipApplications {
                             result.getString("company_name"),
                             result.getString("internship_role"),
                             dateText,
-                            result.getString("status")
+                            result.getString("status"),
+                            result.getInt("past_internships"),
+                            applicationDate
                     });
                 }
             }
@@ -173,9 +494,9 @@ public class FacultyInternshipApplications {
             DefaultTableModel model,
             String newStatus) {
 
-        int selectedRow = table.getSelectedRow();
+        int selectedViewRow = table.getSelectedRow();
 
-        if (selectedRow == -1) {
+        if (selectedViewRow == -1) {
             JOptionPane.showMessageDialog(
                     parent,
                     "Please select an application first."
@@ -183,16 +504,14 @@ public class FacultyInternshipApplications {
             return;
         }
 
-        int row = table.convertRowIndexToModel(selectedRow);
+        int row = table.convertRowIndexToModel(selectedViewRow);
 
         int applicationId = Integer.parseInt(
                 model.getValueAt(row, 0).toString()
         );
 
-        String currentStatus =
-                model.getValueAt(row, 9).toString();
+        String currentStatus = model.getValueAt(row, 9).toString();
 
-        // Allow only valid status transitions.
         boolean validTransition;
 
         switch (newStatus) {
@@ -200,18 +519,15 @@ public class FacultyInternshipApplications {
                 validTransition =
                         "Applied".equalsIgnoreCase(currentStatus);
                 break;
-
             case "Selected":
                 validTransition =
                         "Shortlisted".equalsIgnoreCase(currentStatus);
                 break;
-
             case "Rejected":
                 validTransition =
                         "Applied".equalsIgnoreCase(currentStatus)
                         || "Shortlisted".equalsIgnoreCase(currentStatus);
                 break;
-
             default:
                 validTransition = false;
         }
@@ -226,8 +542,7 @@ public class FacultyInternshipApplications {
                                 "Shortlist the application before marking it Selected.";
                         case "Rejected" ->
                                 "Only Applied or Shortlisted applications can be rejected.";
-                        default ->
-                                "Invalid status change.";
+                        default -> "Invalid status change.";
                     }
             );
             return;
@@ -291,8 +606,7 @@ public class FacultyInternshipApplications {
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(
                     parent,
-                    "Error updating application:\n"
-                            + ex.getMessage()
+                    "Error updating application:\n" + ex.getMessage()
             );
         }
     }

@@ -14,7 +14,7 @@ public class FacultyDashboard {
 
 public static void showDashboard() {
 
-        frame = new JFrame("G.Narayanamma Institute of Technology");
+        frame = new JFrame("Campus Placement & Internship Management System");
         frame.setSize(1100, 700);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -30,7 +30,7 @@ public static void showDashboard() {
         header.setPreferredSize(new Dimension(1100, 75));
 
         JLabel title = new JLabel(
-                "  G.Narayanamma Institute of Technology  "
+                "  Campus Placement & Internship Management System  "
         );
 
         title.setForeground(Color.WHITE);

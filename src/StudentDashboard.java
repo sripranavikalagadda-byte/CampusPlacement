@@ -45,7 +45,7 @@ public class StudentDashboard {
 
        JLabel title =
         new JLabel(
-                "  G. Narayanamma Institute of Technology"
+                "Campus Placement & Internship Management System"
         );
 
         title.setForeground(Color.WHITE);
@@ -99,7 +99,7 @@ public class StudentDashboard {
 
         sidebar.setLayout(
                 new GridLayout(
-                        8,
+                        7,
                         1,
                         0,
                         8
@@ -124,12 +124,9 @@ public class StudentDashboard {
                         "My Profile"
                 );
 
-        JButton drivesButton =
-                createMenuButton(
-                        "Company Drives"
-                );
-        JButton internshipsButton =
-                createMenuButton("Internships");        
+        JButton drivesButton = createMenuButton(
+        "<html><center>Company Drives &amp;<br>Internships</center></html>"
+);       
 
         JButton applicationsButton =
                 createMenuButton(
@@ -159,10 +156,7 @@ public class StudentDashboard {
                 profileButton
         );
 
-        sidebar.add(
-                drivesButton
-        );
-        sidebar.add(internshipsButton);
+        sidebar.add(drivesButton);
 
         sidebar.add(
                 applicationsButton
@@ -207,28 +201,63 @@ public class StudentDashboard {
                 "dashboard"
         );
 
+        
         // ==========================================
-        // COMPANY DRIVES
+        // COMPANY DRIVES AND INTERNSHIPS
         // ==========================================
 
         JPanel drivesPanel =
-                StudentCompanyDrives
-                        .createCompanyDrivesPanel(email);
+                StudentCompanyDrives.createCompanyDrivesPanel(email);
+
+        String studentId =
+                email.substring(0, email.indexOf('@'));
+
+        JPanel internshipsPanel =
+                StudentInternships.createInternshipsPanel(studentId);
+
+        // Both existing pages are placed inside one page using tabs.
+        JTabbedPane opportunitiesTabs = new JTabbedPane();
+
+        opportunitiesTabs.addTab(
+                "Company Drives",
+                drivesPanel
+        );
+
+        opportunitiesTabs.addTab(
+                "Internships",
+                internshipsPanel
+        );
+
+        JPanel opportunitiesPanel =
+                new JPanel(new BorderLayout(10, 10));
+
+        JLabel opportunitiesTitle = new JLabel(
+                "COMPANY DRIVES AND INTERNSHIPS",
+                SwingConstants.CENTER
+        );
+
+        opportunitiesTitle.setFont(
+                new Font("Arial", Font.BOLD, 22)
+        );
+
+        opportunitiesTitle.setBorder(
+                BorderFactory.createEmptyBorder(10, 5, 10, 5)
+        );
+
+        opportunitiesPanel.add(
+                opportunitiesTitle,
+                BorderLayout.NORTH
+        );
+
+        opportunitiesPanel.add(
+                opportunitiesTabs,
+                BorderLayout.CENTER
+        );
 
         contentPanel.add(
-                drivesPanel,
-                "drives"
+                opportunitiesPanel,
+                "opportunities"
         );
-        String studentId =
-        email.substring(0, email.indexOf('@'));
-
-JPanel internshipsPanel =
-        StudentInternships.createInternshipsPanel(studentId);
-
-contentPanel.add(
-        internshipsPanel,
-        "internships"
-);
 
         // ==========================================
         // MY APPLICATIONS
@@ -296,19 +325,13 @@ contentPanel.add(
         );
 
         // Company Drives
-        drivesButton.addActionListener(
-                e ->
-                        cardLayout.show(
-                                contentPanel,
-                                "drives"
-                        )
-        );
-        internshipsButton.addActionListener(e ->
+        drivesButton.addActionListener(e ->
         cardLayout.show(
                 contentPanel,
-                "internships"
+                "opportunities"
         )
 );
+        
 
         // My Applications
         applicationsButton.addActionListener(
